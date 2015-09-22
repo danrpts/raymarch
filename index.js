@@ -6,12 +6,8 @@ function render () {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); // render 2 triangles
 }
 
-function update (id, value) {
-	gl.uniform1f(gl.getUniformLocation(program, id), value);
-    render();
-}
-
 function initialize () {
+
 	canvas = document.getElementById('canvas');
 	gl = canvas.getContext('webgl');
 
@@ -20,7 +16,7 @@ function initialize () {
 	}
     
 	var vertShader = gl.createShader(gl.VERTEX_SHADER);
-	gl.shaderSource(vertShader, document.getElementById('vertex-shader').innerHTML);
+	gl.shaderSource(vertShader, require('./shaders/vertex.glsl'));
 	gl.compileShader(vertShader);
 	if (!gl.getShaderParameter(vertShader, gl.COMPILE_STATUS)) {
 		console.warn('Vertex shader failed to compile. The error log is: %s.', gl.getShaderInfoLog(vertShader));
@@ -30,7 +26,7 @@ function initialize () {
 	}
 
 	var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-	gl.shaderSource(fragShader, document.getElementById('fragment-shader').innerHTML);
+	gl.shaderSource(fragShader, require('./shaders/fragment.glsl'));
 	gl.compileShader(fragShader);
 	if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS)) {
 		console.warn('Fragment shader failed to compile. The error log is: %s.', gl.getShaderInfoLog(fragShader));
@@ -66,6 +62,12 @@ function initialize () {
 	gl.uniform1f(gl.getUniformLocation(program, 'light_y'), document.getElementById('light_y').getAttribute('value'));
 	gl.uniform1f(gl.getUniformLocation(program, 'light_z'), document.getElementById('light_z').getAttribute('value'));
 
+	// hack
+	window.update = function (id, value) {
+		gl.uniform1f(gl.getUniformLocation(program, id), value);
+	    render();
+	}
+
 	gl.clearColor(0, 0, 0, 1); // set canvas color
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); // create new buffer
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, -1,  1, 1, -1, 1,  1]), gl.STATIC_DRAW); // buffer in data
@@ -75,5 +77,5 @@ function initialize () {
 }
 
 document.onreadystatechange = function () {
-  (document.readyState == "complete") && initialize();
+	(document.readyState == "complete") && initialize();
 }
