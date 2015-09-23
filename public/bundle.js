@@ -46,6 +46,27 @@
 
 	var canvas, program, gl;
 
+	function rotate (x, y, z) {
+		var r = Math.PI / 180.0,
+			c = Math.cos,
+			s = Math.sin,
+			xrad = x * r,
+			cx = c(xrad),
+			sx = s(xrad),
+			yrad = y * r,
+			cy = c(yrad),
+			sy = s(yrad),
+			zrad = z * r,
+			cz = c(zrad),
+			sz = s(zrad);
+		return [
+			cy*cz,           -cy*sz,          sy,     0,
+		    sx*sy*cz+cx*sz,  -sx*sy*sz+cx*cz, -sx*cy, 0,
+		   	-cx*sy*cz+sx*sz, cx*sy*sz+sx*cz,  cx*cy,  0,
+		   	0,               0,               0,      1
+		]
+	}
+
 	function render () {
 	    gl.clear(gl.COLOR_BUFFER_BIT); // clear screen
 		gl.viewport(0, 0, canvas.width, canvas.height); // set viewport properties
@@ -100,10 +121,7 @@
 		gl.uniform2fv(gl.getUniformLocation(program, 'resolution'), new Float32Array([canvas.width, canvas.height]));
 		gl.uniform1f(gl.getUniformLocation(program, 'fineness'), document.getElementById('fineness').getAttribute('value'));
 		gl.uniform1f(gl.getUniformLocation(program, 'phong_alpha'), document.getElementById('phong_alpha').getAttribute('value'));
-		gl.uniform1f(gl.getUniformLocation(program, 'eye_x'), document.getElementById('eye_x').getAttribute('value'));
-		gl.uniform1f(gl.getUniformLocation(program, 'eye_y'), document.getElementById('eye_y').getAttribute('value'));
-		gl.uniform1f(gl.getUniformLocation(program, 'eye_z'), document.getElementById('eye_z').getAttribute('value'));
-		gl.uniform1f(gl.getUniformLocation(program, 'eye_f'), document.getElementById('eye_f').getAttribute('value'));
+		gl.uniform1f(gl.getUniformLocation(program, 'focal'), document.getElementById('focal').getAttribute('value'));
 		gl.uniform1f(gl.getUniformLocation(program, 'light_x'), document.getElementById('light_x').getAttribute('value'));
 		gl.uniform1f(gl.getUniformLocation(program, 'light_y'), document.getElementById('light_y').getAttribute('value'));
 		gl.uniform1f(gl.getUniformLocation(program, 'light_z'), document.getElementById('light_z').getAttribute('value'));
@@ -137,7 +155,7 @@
 /* 2 */
 /***/ function(module, exports) {
 
-	module.exports = "#define _PI_ 3.1415926535897932384626433832795\nprecision highp float;  \nvarying vec2 uv;\nuniform vec2 resolution;\nuniform float phong_alpha;\nuniform float fineness;\nuniform float eye_x;\nuniform float eye_y;\nuniform float eye_z;\nuniform float eye_f;\nuniform float light_x;\nuniform float light_y;\nuniform float light_z;\nvec3 eye;\nvec3 light;\nvec3 right;\nvec3 up;\nvec3 forward;\n\n// Surface threshold i.e. minimum distance to surface\nconst float ray_EPSILON = 0.001;\n\n// Max allowable steps along ray\nconst int ray_MAX_STEPS = 64;\t\t\n\n// Sphere distance estimator\nfloat sphere (vec3 point, float radius) {\n\treturn length(point) - radius;\n}\n\n// Define the entire scene here\nfloat scene (vec3 point) {\n\treturn sphere(point, 0.5);\n}\n\n// Get surface normal for a point\nvec3 normal (vec3 point) {\n\treturn vec3(scene(point+vec3(1,0,0)) - scene(point-vec3(1,0,0)),\n            \tscene(point+vec3(0,1,0)) - scene(point-vec3(0,1,0)),\n           \t \tscene(point+vec3(0,0,1)) - scene(point-vec3(0,0,1)));\n}\n\n// Get RGB phong shade for a point\nvec3 phongShade (vec3 point) {\n\t\n\t// Material Properties\n\tvec3 phong_ka = vec3(0.6, 0.3, 0);\n\tvec3 phong_kd = vec3(1, 0.5, 0);\n\tvec3 phong_ks = vec3(0.7);\n\t\n\t// Light properties\n\tvec3 phong_Ia = vec3(0.2);\n\tvec3 phong_Id = vec3(0.7);\n\tvec3 phong_Is = vec3(1);\n\t \n\t// Get surface normal\n\tvec3 N = normal(point);\n\t\n\t// Get inicidient ray\n\tvec3 L = normalize(light - point);\n\t\n\t// Get viewer ray\n\tvec3 V = normalize(eye - point);\n\t\n\t// Get reflection ray; Blinn-Phong style\n\tvec3 H = normalize(V+L);\n\t\n\t// Ambient\n\treturn (phong_ka * phong_Ia)\n\t\n\t// Diffuse\n\t+ (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)\n\t\n\t// Specular\n\t+ ((dot(N, L) > 0.0) \n\t\t? (phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)\n\t\t: vec3(0))\n\t;\n\t\n}\n\n// March along a ray defined by an origin and direction\nvec3 rayMarch (vec3 rO, vec3 rD) {\n\n\t// Default/sky color\n\tvec3 shade = vec3(0);\n\n\t// Marched distance\n\tfloat distance = 0.0;\n\n\t// Begin marching\n\tvec3 ray;\n\tfor (int i = 0; i < ray_MAX_STEPS; ++i) {\n\t\t\n\t\t// Formulate the ray\n\t\tray = rO + distance * rD;\n\n\t\t// Cast ray into scene\n\t\tfloat step = scene(ray);\n\t\t\n\t\t// If within the surface threshold\n\t\tif (step < ray_EPSILON / fineness) {\n\t\t\t\n\t\t\t// Apply Blinn-Phong shading or use `distance` to shade\n\t\t\tshade = phongShade(ray);\n\t\t\tbreak;\n\t\t}\n\t\t\n\t\t// Increment safe distance\n\t\tdistance += step;\n\t}\n\n\t// Done!\n\treturn shade;\n}\n\nvoid main () {\n\n\t// Define orientation\n\teye = vec3(eye_x, eye_y, eye_z);\n\tlight = vec3(light_x, light_y, light_z);\n\tright = vec3(1,0,0);\n\tup = vec3(0,1,0);\n\tforward = vec3(0,0,1);\n\t\n\t// Aspect ratio\n\tfloat aR = resolution.x / resolution.y;\n\n\t// Ray origin perspective\n\tvec3 ray_Origin = eye;\n\t\n\t// Ray directon perspective\n\tvec3 ray_Direction = normalize((forward * eye_f) + (right * uv.x * aR) + (up * uv.y));\n\n\t// Ray origin orthographic\n\t//vec3 ray_Origin = (right * uv.x * aR) + (up * uv.y);\n\n\t// Ray directon orthographic\n\t//vec3 ray_Direction = forward;\n\n\t// March to implicit surface\n\tvec3 color = rayMarch(ray_Origin, ray_Direction);\n\t\n\t// Final color\n\tgl_FragColor = vec4(color, 1);\n\t\n}"
+	module.exports = "#define _PI_ 3.1415926535897932384626433832795\nprecision highp float;  \nvarying vec2 uv;\nuniform mat4 rot;\nuniform vec2 resolution;\nuniform float phong_alpha;\nuniform float fineness;\nuniform float focal;\nuniform float light_x;\nuniform float light_y;\nuniform float light_z;\nvec3 eye;\nvec3 light;\nvec3 right;\nvec3 up;\nvec3 forward;\n\n// Surface threshold i.e. minimum distance to surface\nconst float ray_EPSILON = 0.001;\n\n// Max allowable steps along ray\nconst int ray_MAX_STEPS = 64;\t\t\n\n// Sphere distance estimator\nfloat sphere (vec3 point, vec3 center, float radius) {\n\treturn length(point - center) - radius;\n}\n\n// Define the entire scene here\nfloat scene (vec3 point) {\n\treturn sphere(point, vec3(0, 0, -1), 0.5);\n}\n\n// Get surface normal for a point\nvec3 normal (vec3 point) {\n\treturn vec3(scene(point+vec3(1,0,0)) - scene(point-vec3(1,0,0)),\n            \tscene(point+vec3(0,1,0)) - scene(point-vec3(0,1,0)),\n           \t \tscene(point+vec3(0,0,1)) - scene(point-vec3(0,0,1)));\n}\n\n// Get RGB phong shade for a point\nvec3 phongShade (vec3 point) {\n\t\n\t// Material Properties\n\tvec3 phong_ka = vec3(0.6, 0.3, 0);\n\tvec3 phong_kd = vec3(1, 0.5, 0);\n\tvec3 phong_ks = vec3(0.7);\n\t\n\t// Light properties\n\tvec3 phong_Ia = vec3(0.2);\n\tvec3 phong_Id = vec3(0.7);\n\tvec3 phong_Is = vec3(1);\n\t \n\t// Get surface normal\n\tvec3 N = normal(point);\n\t\n\t// Get inicidient ray\n\tvec3 L = normalize(light - point);\n\t\n\t// Get viewer ray\n\tvec3 V = normalize(eye.xyz - point);\n\t\n\t// Get reflection ray; Blinn-Phong style\n\tvec3 H = normalize(V+L);\n\t\n\t// Ambient\n\treturn (phong_ka * phong_Ia)\n\t\n\t// Diffuse\n\t+ (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)\n\t\n\t// Specular\n\t+ ((dot(N, L) > 0.0) \n\t\t? (phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)\n\t\t: vec3(0))\n\t;\n\t\n}\n\n// March along a ray defined by an origin and direction\nvec3 rayMarch (vec3 rO, vec3 rD) {\n\n\t// Default/sky color\n\tvec3 shade = vec3(0);\n\n\t// Marched distance\n\tfloat distance = 0.0;\n\n\t// Begin marching\n\tvec3 ray;\n\tfor (int i = 0; i < ray_MAX_STEPS; ++i) {\n\t\t\n\t\t// Formulate the ray\n\t\tray = rO + distance * rD;\n\n\t\t// Cast ray into scene\n\t\tfloat step = scene(ray);\n\t\t\n\t\t// If within the surface threshold\n\t\tif (step < ray_EPSILON / fineness) {\n\t\t\t\n\t\t\t// Apply Blinn-Phong shading or use `distance` to shade\n\t\t\tshade = phongShade(ray);\n\t\t\tbreak;\n\t\t}\n\t\t\n\t\t// Increment safe distance\n\t\tdistance += step;\n\t}\n\n\t// Done!\n\treturn shade;\n}\n\nvoid main () {\n\n\t// Define orientation\n\teye = vec3(0, 0, 1);\n\tlight = vec3(light_x, light_y, light_z);\n\tright = vec3(1,0,0);\n\tup = vec3(0,1,0);\n\tforward = vec3(0,0,-1);\n\t\n\t// Aspect ratio\n\tfloat aR = resolution.x / resolution.y;\n\n\t// Ray origin perspective\n\tvec3 ray_Origin = eye;\n\t\n\t// Ray directon perspective\n\tvec3 ray_Direction = normalize((forward * focal) + (right * uv.x * aR) + (up * uv.y));\n\n\t// Ray origin orthographic\n\t//vec3 ray_Origin = (right * uv.x * aR) + (up * uv.y);\n\n\t// Ray directon orthographic\n\t//vec3 ray_Direction = forward;\n\n\t// March to implicit surface\n\tvec3 color = rayMarch(ray_Origin, ray_Direction);\n\t\n\t// Final color\n\tgl_FragColor = vec4(color, 1);\n\t\n}"
 
 /***/ }
 /******/ ]);

@@ -8,15 +8,19 @@
 		<div class="mdl-grid">
 			<aside class="mdl-cell mdl-cell--3-col">
 				<ul style="list-style: none;">
+
 					<li>Fineness: <input type="range" min="1" max="16" step="1" value="1" id="fineness" oninput="update(this.id, value)"></li>
+
 					<li>Shininess: <input type="range" min="1" max="8" step="1" value="1" id="phong_alpha" oninput="update(this.id, value)"></li>
-					<li>Focal: <input type="range" min="1" max="20" step=".05" value="1" id="eye_f" oninput="update(this.id, value)"></li>
-					<li>Eye X: <input type="range" min="-30" max="30" step=".05" value="0" id="eye_x" oninput="update(this.id, value)"></li>
-					<li>Eye Y: <input type="range" min="-30" max="30" step=".05" value="0" id="eye_y" oninput="update(this.id, value)"></li>
-					<li>Eye Z: <input type="range" min="-4" max="0" step=".05" value="-2" id="eye_z" oninput="update(this.id, value)"></li>
-					<li>Light X: <input type="range" min="-30" max="30" step=".05" value="2" id="light_x" oninput="update(this.id, value)"></li>
-					<li>Light Y: <input type="range" min="-30" max="30" step=".05" value="2" id="light_y" oninput="update(this.id, value)"></li>
-					<li>Light Z: <input type="range" min="-30" max="30" step=".05" value="-2" id="light_z" oninput="update(this.id, value)"></li>
+
+					<li>Focal: <input type="range" min="1" max="20" step=".05" value="1" id="focal" oninput="update(this.id, value)"></li>
+
+					<li>Light X: <input type="range" min="-5" max="5" step=".05" value="1" id="light_x" oninput="update(this.id, value)"></li>
+
+					<li>Light Y: <input type="range" min="-5" max="5" step=".05" value="1" id="light_y" oninput="update(this.id, value)"></li>
+
+					<li>Light Z: <input type="range" min="-5" max="5" step=".05" value="1" id="light_z" oninput="update(this.id, value)"></li>
+
 				</ul>
 			</aside>
 			<main class="mdl-cell mdl-cell--9-col">

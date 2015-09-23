@@ -1,13 +1,11 @@
 #define _PI_ 3.1415926535897932384626433832795
 precision highp float;  
 varying vec2 uv;
+uniform mat4 rot;
 uniform vec2 resolution;
 uniform float phong_alpha;
 uniform float fineness;
-uniform float eye_x;
-uniform float eye_y;
-uniform float eye_z;
-uniform float eye_f;
+uniform float focal;
 uniform float light_x;
 uniform float light_y;
 uniform float light_z;
@@ -24,13 +22,13 @@ const float ray_EPSILON = 0.001;
 const int ray_MAX_STEPS = 64;		
 
 // Sphere distance estimator
-float sphere (vec3 point, float radius) {
-	return length(point) - radius;
+float sphere (vec3 point, vec3 center, float radius) {
+	return length(point - center) - radius;
 }
 
 // Define the entire scene here
 float scene (vec3 point) {
-	return sphere(point, 0.5);
+	return sphere(point, vec3(0, 0, -1), 0.5);
 }
 
 // Get surface normal for a point
@@ -60,7 +58,7 @@ vec3 phongShade (vec3 point) {
 	vec3 L = normalize(light - point);
 	
 	// Get viewer ray
-	vec3 V = normalize(eye - point);
+	vec3 V = normalize(eye.xyz - point);
 	
 	// Get reflection ray; Blinn-Phong style
 	vec3 H = normalize(V+L);
@@ -117,11 +115,11 @@ vec3 rayMarch (vec3 rO, vec3 rD) {
 void main () {
 
 	// Define orientation
-	eye = vec3(eye_x, eye_y, eye_z);
+	eye = vec3(0, 0, 1);
 	light = vec3(light_x, light_y, light_z);
 	right = vec3(1,0,0);
 	up = vec3(0,1,0);
-	forward = vec3(0,0,1);
+	forward = vec3(0,0,-1);
 	
 	// Aspect ratio
 	float aR = resolution.x / resolution.y;
@@ -130,7 +128,7 @@ void main () {
 	vec3 ray_Origin = eye;
 	
 	// Ray directon perspective
-	vec3 ray_Direction = normalize((forward * eye_f) + (right * uv.x * aR) + (up * uv.y));
+	vec3 ray_Direction = normalize((forward * focal) + (right * uv.x * aR) + (up * uv.y));
 
 	// Ray origin orthographic
 	//vec3 ray_Origin = (right * uv.x * aR) + (up * uv.y);

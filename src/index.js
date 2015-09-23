@@ -1,5 +1,26 @@
 var canvas, program, gl;
 
+function rotate (x, y, z) {
+	var r = Math.PI / 180.0,
+		c = Math.cos,
+		s = Math.sin,
+		xrad = x * r,
+		cx = c(xrad),
+		sx = s(xrad),
+		yrad = y * r,
+		cy = c(yrad),
+		sy = s(yrad),
+		zrad = z * r,
+		cz = c(zrad),
+		sz = s(zrad);
+	return [
+		cy*cz,           -cy*sz,          sy,     0,
+	    sx*sy*cz+cx*sz,  -sx*sy*sz+cx*cz, -sx*cy, 0,
+	   	-cx*sy*cz+sx*sz, cx*sy*sz+sx*cz,  cx*cy,  0,
+	   	0,               0,               0,      1
+	]
+}
+
 function render () {
     gl.clear(gl.COLOR_BUFFER_BIT); // clear screen
 	gl.viewport(0, 0, canvas.width, canvas.height); // set viewport properties
@@ -54,10 +75,7 @@ function initialize () {
 	gl.uniform2fv(gl.getUniformLocation(program, 'resolution'), new Float32Array([canvas.width, canvas.height]));
 	gl.uniform1f(gl.getUniformLocation(program, 'fineness'), document.getElementById('fineness').getAttribute('value'));
 	gl.uniform1f(gl.getUniformLocation(program, 'phong_alpha'), document.getElementById('phong_alpha').getAttribute('value'));
-	gl.uniform1f(gl.getUniformLocation(program, 'eye_x'), document.getElementById('eye_x').getAttribute('value'));
-	gl.uniform1f(gl.getUniformLocation(program, 'eye_y'), document.getElementById('eye_y').getAttribute('value'));
-	gl.uniform1f(gl.getUniformLocation(program, 'eye_z'), document.getElementById('eye_z').getAttribute('value'));
-	gl.uniform1f(gl.getUniformLocation(program, 'eye_f'), document.getElementById('eye_f').getAttribute('value'));
+	gl.uniform1f(gl.getUniformLocation(program, 'focal'), document.getElementById('focal').getAttribute('value'));
 	gl.uniform1f(gl.getUniformLocation(program, 'light_x'), document.getElementById('light_x').getAttribute('value'));
 	gl.uniform1f(gl.getUniformLocation(program, 'light_y'), document.getElementById('light_y').getAttribute('value'));
 	gl.uniform1f(gl.getUniformLocation(program, 'light_z'), document.getElementById('light_z').getAttribute('value'));
