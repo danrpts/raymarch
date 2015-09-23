@@ -14,6 +14,9 @@ function initialize () {
 	if (!gl) {
 		alert("Unable to initialize WebGL. Your browser may not support it.");
 	}
+
+	canvas.width = $('.page-content').innerWidth();
+	canvas.height = $('body').innerHeight();
     
 	var vertShader = gl.createShader(gl.VERTEX_SHADER);
 	gl.shaderSource(vertShader, require('./shaders/vertex.glsl'));
