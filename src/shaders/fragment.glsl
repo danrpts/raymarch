@@ -117,8 +117,8 @@ void main () {
 	// Define orientation
 	eye = vec3(0, 0, 1);
 	light = vec3(light_x, light_y, light_z);
-	right = vec3(1,0,0);
 	up = vec3(0,1,0);
+	right = vec3(1,0,0);
 	forward = vec3(0,0,-1);
 	
 	// Aspect ratio
