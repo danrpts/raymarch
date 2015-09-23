@@ -2,24 +2,25 @@
     <head>
         <meta charset="utf-8">
         <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.min.css" />
-        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css" />
-    </head>
+     	<link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.indigo-pink.min.css">
+		<script src="https://storage.googleapis.com/code.getmdl.io/1.0.4/material.min.js"></script>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></head>
     <body>
 		<div class="mdl-grid">
 			<aside class="mdl-cell mdl-cell--3-col">
 				<ul style="list-style: none;">
 
-					<li>Fineness: <input type="range" min="1" max="16" step="1" value="1" id="fineness" oninput="update(this.id, value)"></li>
+					<li>Fineness: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="16" step="1" value="1" id="fineness" oninput="update(this.id, value)"></li>
 
-					<li>Shininess: <input type="range" min="1" max="8" step="1" value="1" id="phong_alpha" oninput="update(this.id, value)"></li>
+					<li>Shininess: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="8" step="1" value="1" id="phong_alpha" oninput="update(this.id, value)"></li>
 
-					<li>Focal: <input type="range" min="1" max="20" step=".05" value="1" id="focal" oninput="update(this.id, value)"></li>
+					<li>Focal: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="20" step=".05" value="1" id="focal" oninput="update(this.id, value)"></li>
 
-					<li>Light X: <input type="range" min="-5" max="5" step=".05" value="1" id="light_x" oninput="update(this.id, value)"></li>
+					<li>Light X: <input class="mdl-slider mdl-js-slider" type="range" min="-5" max="5" step=".05" value="1" id="light_x" oninput="update(this.id, value)"></li>
 
-					<li>Light Y: <input type="range" min="-5" max="5" step=".05" value="1" id="light_y" oninput="update(this.id, value)"></li>
+					<li>Light Y: <input class="mdl-slider mdl-js-slider" type="range" min="-5" max="5" step=".05" value="1" id="light_y" oninput="update(this.id, value)"></li>
 
-					<li>Light Z: <input type="range" min="-5" max="5" step=".05" value="1" id="light_z" oninput="update(this.id, value)"></li>
+					<li>Light Z: <input class="mdl-slider mdl-js-slider" type="range" min="-5" max="5" step=".05" value="1" id="light_z" oninput="update(this.id, value)"></li>
 
 				</ul>
 			</aside>
