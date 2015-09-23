@@ -1,26 +1,5 @@
 var canvas, program, gl;
 
-function rotate (x, y, z) {
-	var r = Math.PI / 180.0,
-		c = Math.cos,
-		s = Math.sin,
-		xrad = x * r,
-		cx = c(xrad),
-		sx = s(xrad),
-		yrad = y * r,
-		cy = c(yrad),
-		sy = s(yrad),
-		zrad = z * r,
-		cz = c(zrad),
-		sz = s(zrad);
-	return [
-		cy*cz,           -cy*sz,          sy,     0,
-	    sx*sy*cz+cx*sz,  -sx*sy*sz+cx*cz, -sx*cy, 0,
-	   	-cx*sy*cz+sx*sz, cx*sy*sz+sx*cz,  cx*cy,  0,
-	   	0,               0,               0,      1
-	]
-}
-
 function render () {
     gl.clear(gl.COLOR_BUFFER_BIT); // clear screen
 	gl.viewport(0, 0, canvas.width, canvas.height); // set viewport properties
