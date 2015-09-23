@@ -1,4 +1,4 @@
-var canvas, program, gl;
+var canvas, program, gl, $ = window.$;
 
 function render () {
     gl.clear(gl.COLOR_BUFFER_BIT); // clear screen
@@ -52,12 +52,12 @@ function initialize () {
 	gl.useProgram(program);
 
 	gl.uniform2fv(gl.getUniformLocation(program, 'resolution'), new Float32Array([canvas.width, canvas.height]));
-	gl.uniform1f(gl.getUniformLocation(program, 'fineness'), document.getElementById('fineness').getAttribute('value'));
-	gl.uniform1f(gl.getUniformLocation(program, 'phong_alpha'), document.getElementById('phong_alpha').getAttribute('value'));
-	gl.uniform1f(gl.getUniformLocation(program, 'focal'), document.getElementById('focal').getAttribute('value'));
-	gl.uniform1f(gl.getUniformLocation(program, 'light_x'), document.getElementById('light_x').getAttribute('value'));
-	gl.uniform1f(gl.getUniformLocation(program, 'light_y'), document.getElementById('light_y').getAttribute('value'));
-	gl.uniform1f(gl.getUniformLocation(program, 'light_z'), document.getElementById('light_z').getAttribute('value'));
+	gl.uniform1f(gl.getUniformLocation(program, 'fineness'), $('#fineness').val());
+	gl.uniform1f(gl.getUniformLocation(program, 'phong_alpha'), $('#phong_alpha').val());
+	gl.uniform1f(gl.getUniformLocation(program, 'focal'), $('#focal').val());
+	gl.uniform1f(gl.getUniformLocation(program, 'light_x'), $('#light_x').val());
+	gl.uniform1f(gl.getUniformLocation(program, 'light_y'), $('#light_y').val());
+	gl.uniform1f(gl.getUniformLocation(program, 'light_z'), $('#light_z').val());
 
 	// hack
 	window.update = function (id, value) {
@@ -73,6 +73,4 @@ function initialize () {
     render();
 }
 
-document.onreadystatechange = function () {
-	(document.readyState == "complete") && initialize();
-}
+$(initialize);
