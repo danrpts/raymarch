@@ -9,5 +9,8 @@ module.exports = {
 		loaders: [
 			{ test: /\.glsl$/, loader: 'shader' }
 		]
-	}
+	},
+	externals: {
+        "jquery": "jQuery"
+    }
 }

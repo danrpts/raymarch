@@ -1,15 +1,15 @@
 #define _PI_ 3.1415926535897932384626433832795
 precision highp float;  
 varying vec2 uv;
-uniform mat4 rot;
 uniform vec2 resolution;
+uniform vec2 mouse;
+uniform vec3 eye;
 uniform float phong_alpha;
 uniform float fineness;
 uniform float focal;
 uniform float light_x;
 uniform float light_y;
 uniform float light_z;
-vec3 eye;
 vec3 light;
 vec3 right;
 vec3 up;
@@ -28,7 +28,7 @@ float sphere (vec3 point, vec3 center, float radius) {
 
 // Define the entire scene here
 float scene (vec3 point) {
-	return sphere(point, vec3(0, 0, -1), 0.5);
+	return min(sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0,0,-5), 0.5));
 }
 
 // Get surface normal for a point
@@ -112,23 +112,37 @@ vec3 rayMarch (vec3 rO, vec3 rD) {
 	return shade;
 }
 
+mat3 lookat (vec3 eye, vec3 at, vec3 up) {
+	vec3 n = normalize(at - eye);
+	vec3 u = normalize(cross(up, n));
+	vec3 v = normalize(cross(n, u));
+	return mat3(u, v, n);
+}
+
 void main () {
 
-	// Define orientation
-	eye = vec3(0, 0, 1);
+	// Define
 	light = vec3(light_x, light_y, light_z);
 	up = vec3(0,1,0);
 	right = vec3(1,0,0);
 	forward = vec3(0,0,-1);
-	
+
+	vec3 at = vec3(0,0,-1);
+
 	// Aspect ratio
 	float aR = resolution.x / resolution.y;
 
-	// Ray origin perspective
+	// Orient the viewer
+	mat3 orient = lookat(eye, at, up);
+
+	// Ray origin
 	vec3 ray_Origin = eye;
 	
-	// Ray directon perspective
-	vec3 ray_Direction = normalize((forward * focal) + (right * uv.x * aR) + (up * uv.y));
+	// Ray directon
+	vec3 ray_Direction = orient * normalize(vec3(uv.x * aR, uv.y, focal));
+
+	// Ray direction perspective
+	//vec3 ray_Direction = normalize((right * uv.x * aR) + (up * uv.y) + (forward * focal));
 
 	// Ray origin orthographic
 	//vec3 ray_Origin = (right * uv.x * aR) + (up * uv.y);

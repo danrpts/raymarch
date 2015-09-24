@@ -1,6 +1,8 @@
-var canvas, program, gl, $ = window.$;
+require('./controls.js');
+var $ = require('jquery');
+var canvas, program, gl;
 
-function render () {
+window.render = function render () {
     gl.clear(gl.COLOR_BUFFER_BIT); // clear screen
 	gl.viewport(0, 0, canvas.width, canvas.height); // set viewport properties
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); // render 2 triangles
@@ -9,14 +11,15 @@ function render () {
 function initialize () {
 
 	canvas = document.getElementById('canvas');
-	gl = canvas.getContext('webgl');
+	gl = window.gl = canvas.getContext('webgl');
 
 	if (!gl) {
 		alert("Unable to initialize WebGL. Your browser may not support it.");
 	}
 
 	canvas.width = $('.page-content').width();
-	canvas.height = $('body').innerHeight();
+	canvas.height = window.innerHeight;
+	window.eye = [0,0,0];
     
 	var vertShader = gl.createShader(gl.VERTEX_SHADER);
 	gl.shaderSource(vertShader, require('./shaders/vertex.glsl'));
@@ -38,7 +41,7 @@ function initialize () {
 		return false;
 	}
 
-	program = gl.createProgram();
+	program = window.program = gl.createProgram();
 	gl.attachShader(program, vertShader);
 	gl.attachShader(program, fragShader);
 	gl.linkProgram(program);
@@ -61,6 +64,8 @@ function initialize () {
 	gl.uniform1f(gl.getUniformLocation(program, 'light_x'), $('#light_x').val());
 	gl.uniform1f(gl.getUniformLocation(program, 'light_y'), $('#light_y').val());
 	gl.uniform1f(gl.getUniformLocation(program, 'light_z'), $('#light_z').val());
+	gl.uniform3fv(gl.getUniformLocation(program, 'eye'), new Float32Array(window.eye));
+
 
 	// hack
 	window.update = function (id, value) {
