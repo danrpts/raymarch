@@ -1,9 +1,13 @@
-var $ = require('jquery'),
-	delta = 0.09;
+var $ = require('jquery');
 
-$('canvas').mouseup(function (e) {
-	var pos = [e.pageX - $(this).offset().left, e.pageY - $(this).offset().top]
-	window.gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(pos));
+$('canvas').mousemove(function (e) {
+    var x = e.pageX - $(this).offset().left,
+        y = e.pageY - $(this).offset().top,
+        w = $(this).width(),
+        h = $(this).height();
+	var coord = [2*x/w-1, 2*(h-y)/h-1];
+    console.log(coord);
+	window.gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(coord));
 	window.render();
 });
 
@@ -18,25 +22,17 @@ $('body').keydown(function (e) {
 });
 
 function w() {
-	window.eye[2] -= delta;
-	window.gl.uniform3fv(gl.getUniformLocation(program, 'eye'), new Float32Array(window.eye));
-	window.render();
+
 } 
 
 function a() {
-	window.eye[0] -= delta;
-	window.gl.uniform3fv(gl.getUniformLocation(program, 'eye'), new Float32Array(window.eye));
-	window.render();
+
 } 
 
 function s() {
-	window.eye[2] += delta;
-	window.gl.uniform3fv(gl.getUniformLocation(program, 'eye'), new Float32Array(window.eye));
-	window.render();
+
 } 
 
 function d() {
-	window.eye[0] += delta;
-	window.gl.uniform3fv(gl.getUniformLocation(program, 'eye'), new Float32Array(window.eye));
-	window.render();
+
 }

@@ -114,8 +114,8 @@ vec3 rayMarch (vec3 rO, vec3 rD) {
 
 mat3 lookat (vec3 eye, vec3 at, vec3 up) {
 	vec3 n = normalize(at - eye);
-	vec3 u = normalize(cross(up, n));
-	vec3 v = normalize(cross(n, u));
+	vec3 u = normalize(cross(n, up));
+	vec3 v = normalize(cross(u, n));
 	return mat3(u, v, n);
 }
 
@@ -127,7 +127,7 @@ void main () {
 	right = vec3(1,0,0);
 	forward = vec3(0,0,-1);
 
-	vec3 at = vec3(0,0,-1);
+	vec3 at = vec3(mouse, -focal);
 
 	// Aspect ratio
 	float aR = resolution.x / resolution.y;
