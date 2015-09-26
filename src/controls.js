@@ -6,7 +6,7 @@ $('canvas').mousemove(function (e) {
         w = $(this).width(),
         h = $(this).height();
 	var coord = [2*x/w-1, 2*(h-y)/h-1];
-    console.log(coord);
+    // console.log(coord); // potential debug info
 	window.gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(coord));
 	window.render();
 });
