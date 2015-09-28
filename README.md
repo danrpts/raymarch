@@ -1,4 +1,4 @@
-# Raymarch Light
+# Raymarch
 A lightweight WebGl raymarching engine for experiental and educational uses
 
 ## Install
@@ -8,6 +8,8 @@ A lightweight WebGl raymarching engine for experiental and educational uses
     npm install
   
     npm start
+    
+The application is now hosted at http://localhost:8080
 
 ## Controls
 Look around: `ctrl` + `mousemove`
