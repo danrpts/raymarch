@@ -1,9 +1,26 @@
 # General
 - [ ] log info for optional debugging
 
+# Application
+- [ ] Split material properties out
+- [ ] Split camera controls out
+- [ ] Split out light properties/controls
+- [ ] Abstract state from DOM
+- [ ] Modules globals/state
+
 # Render Controls
-- [ ] Virtual trackball movement for object transformation
-- [ ] Remove range sliders
 - [ ] Fogging
-- [ ] Look for bugs in phong shading
+- [ ] Anti aliasing / super-sampling
+
+# Material Properties
+- [ ] Ui
+
+# Camera Controls
+- [ ] Ui
+- [ ] Virtual trackball movement for camera rotations 
+
+# Light Properties
+- [ ] Ui
 - [ ] Point light creation
+- [ ] Volumetric Lighting
+- [ ] Look for bugs in phong shading
