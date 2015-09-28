@@ -2,6 +2,10 @@
 A lightweight WebGl raymarching engine for experimental and educational uses
 
 ## Install
+	
+	git clone https://github.com/danrpts/raymarch.git
+
+	cd raymarch
 
     npm install -g webpack webpack-dev-server
   

@@ -1,6 +1,6 @@
 {
   "name": "raymarch",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Lightweight WebGl Raymarching Engine",
   "private": true,
   "scripts": {

@@ -1,5 +1,7 @@
 # General
-- [ ] Log info for optional debugging
+- [ ] Comments
+- [ ] Documentation
+- [ ] Tests
 
 # Application
 - [ ] Ui / Ux
@@ -8,17 +10,26 @@
 - [ ] Split out light properties/controls
 - [ ] Abstract state from DOM
 - [ ] Modules globals/state
+- [ ] Console controls
+- [ ] Debugger logs
+
+# Canvas
+- [ ] Responsive
 
 # Render Controls
 - [ ] Fogging
 - [ ] Anti aliasing / super-sampling
+- [ ] Granularity
 
 # Material Properties
 - [ ] Ui
+- [ ] Texture upload
+- [ ] Texture mapping
 
 # Camera Controls
 - [ ] Ui
-- [ ] Virtual trackball movement for camera rotations 
+- [ ] Virtual trackball movement for camera rotations
+- [ ] Splines
 
 # Light Properties
 - [ ] Ui
