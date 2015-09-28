@@ -57,15 +57,29 @@ function initialize () {
 
 	gl.useProgram(program);
 
-	gl.uniform2fv(gl.getUniformLocation(program, 'resolution'), new Float32Array([canvas.width, canvas.height]));
+
+    gl.uniformMatrix3fv(gl.getUniformLocation(program, "rot"), gl.FALSE, new Float32Array(rotate(0, 0, 0)));
+    gl.uniform3fv(gl.getUniformLocation(program, 'eye'), new Float32Array(window.eye));
+    gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array([0, 0]));
+    gl.uniform2fv(gl.getUniformLocation(program, 'resolution'), new Float32Array([canvas.width, canvas.height]));
 	gl.uniform1f(gl.getUniformLocation(program, 'fineness'), $('#fineness').val());
 	gl.uniform1f(gl.getUniformLocation(program, 'phong_alpha'), $('#phong_alpha').val());
 	gl.uniform1f(gl.getUniformLocation(program, 'focal'), $('#focal').val());
 	gl.uniform1f(gl.getUniformLocation(program, 'light_x'), $('#light_x').val());
 	gl.uniform1f(gl.getUniformLocation(program, 'light_y'), $('#light_y').val());
 	gl.uniform1f(gl.getUniformLocation(program, 'light_z'), $('#light_z').val());
-	gl.uniform3fv(gl.getUniformLocation(program, 'eye'), new Float32Array(window.eye));
 
+
+    // put texture on gpu
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, $('#mars')[0]);
+    gl.generateMipmap(gl.TEXTURE_2D);
 
 	// hack
 	window.update = function (id, value) {

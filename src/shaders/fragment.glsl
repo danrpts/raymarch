@@ -10,6 +10,8 @@ uniform float focal;
 uniform float light_x;
 uniform float light_y;
 uniform float light_z;
+uniform sampler2D mars;
+uniform mat3 rot;
 vec3 light;
 vec3 right;
 vec3 up;
@@ -28,7 +30,7 @@ float sphere (vec3 point, vec3 center, float radius) {
 
 // Define the entire scene here
 float scene (vec3 point) {
-	return min(sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0,0,-5), 0.5));
+	return min(sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0,0,5), 0.5));
 }
 
 // Get surface normal for a point
@@ -40,19 +42,22 @@ vec3 normal (vec3 point) {
 
 // Get RGB phong shade for a point
 vec3 phongShade (vec3 point) {
+
+    // Get surface normal
+    vec3 N = normal(point);
 	
+    // Get sphere mapped texture coordinate
+    vec4 texture = texture2D(mars, vec2(asin(N.x)/_PI_ + 0.5, asin(N.y)/_PI_ + 0.5));
+
 	// Material Properties
-	vec3 phong_ka = vec3(0.6, 0.3, 0);
-	vec3 phong_kd = vec3(1, 0.5, 0);
-	vec3 phong_ks = vec3(0.7);
+	vec3 phong_ka = texture.xyz;
+	vec3 phong_kd = texture.xyz;
+	vec3 phong_ks = texture.xyz;
 	
 	// Light properties
-	vec3 phong_Ia = vec3(0.2);
+	vec3 phong_Ia = vec3(0.3);
 	vec3 phong_Id = vec3(0.7);
 	vec3 phong_Is = vec3(1);
-	 
-	// Get surface normal
-	vec3 N = normal(point);
 	
 	// Get inicidient ray
 	vec3 L = normalize(light - point);
@@ -78,10 +83,10 @@ vec3 phongShade (vec3 point) {
 }
 
 // March along a ray defined by an origin and direction
-vec3 rayMarch (vec3 rO, vec3 rD) {
+vec4 rayMarch (vec3 rO, vec3 rD) {
 
 	// Default/sky color
-	vec3 shade = vec3(0);
+	vec4 shade = vec4(0, 0, 0, 1);
 
 	// Marched distance
 	float distance = 0.0;
@@ -100,7 +105,7 @@ vec3 rayMarch (vec3 rO, vec3 rD) {
 		if (step < ray_EPSILON / fineness) {
 			
 			// Apply Blinn-Phong shading or use `distance` to shade
-			shade = phongShade(ray);
+			shade = vec4(phongShade(ray), 1);
 			break;
 		}
 		
@@ -124,25 +129,26 @@ void main () {
 	// Define
 	light = vec3(light_x, light_y, light_z);
 	up = vec3(0,1,0);
-	right = vec3(1,0,0);
-	forward = vec3(0,0,-1);
+	//right = vec3(1,0,0);
+	//forward = vec3(0,0,-1);
 
+    // Look at point
 	vec3 at = vec3(mouse, -focal);
 
 	// Aspect ratio
 	float aR = resolution.x / resolution.y;
 
-	// Orient the viewer
-	mat3 orient = lookat(eye, at, up);
-
 	// Ray origin
 	vec3 ray_Origin = eye;
+
+    // Orient the viewer
+    mat3 orient = lookat(ray_Origin, at, up);
 	
-	// Ray directon
+	// Ray directon look around
 	vec3 ray_Direction = orient * normalize(vec3(uv.x * aR, uv.y, focal));
 
 	// Ray direction perspective
-	//vec3 ray_Direction = normalize((right * uv.x * aR) + (up * uv.y) + (forward * focal));
+    //vec3 ray_Direction = normalize((right * uv.x * aR) + (up * uv.y) + (forward * focal));
 
 	// Ray origin orthographic
 	//vec3 ray_Origin = (right * uv.x * aR) + (up * uv.y);
@@ -151,9 +157,9 @@ void main () {
 	//vec3 ray_Direction = forward;
 
 	// March to implicit surface
-	vec3 color = rayMarch(ray_Origin, ray_Direction);
+	vec4 color = rayMarch(ray_Origin, ray_Direction);
 	
 	// Final color
-	gl_FragColor = vec4(color, 1);
+	gl_FragColor = color;
 	
 }
