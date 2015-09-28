@@ -1,5 +1,5 @@
 # General
-- [ ] log info for optional debugging
+- [ ] Log info for optional debugging
 
 # Application
 - [ ] Ui / Ux
