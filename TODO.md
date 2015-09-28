@@ -2,6 +2,7 @@
 - [ ] log info for optional debugging
 
 # Application
+- [ ] Ui / Ux
 - [ ] Split material properties out
 - [ ] Split camera controls out
 - [ ] Split out light properties/controls
