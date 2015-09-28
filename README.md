@@ -1,5 +1,5 @@
 # Raymarch
-A lightweight WebGl raymarching engine for experiental and educational uses
+A lightweight WebGl raymarching engine for experimental and educational uses
 
 ## Install
 
