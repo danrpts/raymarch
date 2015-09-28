@@ -1,10 +1,8 @@
 # General
-- [ ] readme
 - [ ] log info for optional debugging
 
 # Render Controls
-- [ ] Better WASD style camera movement
-- [ ] Rotate world about XY on mouse drag
+- [ ] Virtual trackball movement for object transformation
 - [ ] Remove range sliders
 - [ ] Fogging
 - [ ] Look for bugs in phong shading
