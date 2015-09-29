@@ -9,9 +9,6 @@ $(function () {
 
   if (!!gl) {
 
-    // temporary 
-  	require('./controls.js')(gl, controls);
-
     canvas.width = $('.page-content').width();
     canvas.height = window.innerHeight;
 
@@ -62,6 +59,9 @@ $(function () {
     gl.uniform1f(gl.getUniformLocation(program, 'light_x'), $('#light_x').val());
     gl.uniform1f(gl.getUniformLocation(program, 'light_y'), $('#light_y').val());
     gl.uniform1f(gl.getUniformLocation(program, 'light_z'), $('#light_z').val());
+
+    // temporary 
+    require('./controls.js')(canvas, gl, program);
     
     // put texture on gpu
     var texture = gl.createTexture();
@@ -79,7 +79,7 @@ $(function () {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, -1,  1, 1, -1, 1,  1]), gl.STATIC_DRAW); // buffer in data
     gl.vertexAttribPointer(gl.getAttribLocation(program, 'vertex'), 2, gl.FLOAT, false, 8, 0); // describe buffer
     gl.enableVertexAttribArray(gl.getAttribLocation(program, 'vertex')); // enable buffer
-    render(gl, canvas);
+    render(canvas, gl);
   }
   
 });

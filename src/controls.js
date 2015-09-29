@@ -1,12 +1,12 @@
 var render = require('./render.js');
 var $ = require('jquery');
 
-module.exports = function (gl, canvas) {
+module.exports = function (canvas, gl, program) {
 
   // temporary
   window.update = function (id, value) {
     gl.uniform1f(gl.getUniformLocation(program, id), value);
-    render(gl, canvas);
+    render(canvas, gl);
   }
 
 
@@ -39,7 +39,7 @@ module.exports = function (gl, canvas) {
       var h = $(this).height();
       var coord = [2*x/w-1, 2*(h-y)/h-1];
       gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(coord));
-      render(gl, canvas);
+      render(canvas, gl);
     }
   });
 

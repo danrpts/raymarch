@@ -1,4 +1,4 @@
-module.exports = function (gl, canvas) {
+module.exports = function (canvas, gl) {
   if (!!gl) {
   
     // Clear the canvas
