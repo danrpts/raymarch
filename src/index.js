@@ -1,11 +1,10 @@
-var glinit = require('./glinit.js');
-var render = require('./render.js');
+var utils = require('./utils.js');
 var $ = require('jquery');
 
 $(function () {
 
   var canvas = $('#canvas')[0];
-  var gl = glinit(canvas);
+  var gl = utils.glinit(canvas);
 
   if (!!gl) {
 
@@ -79,7 +78,7 @@ $(function () {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, -1,  1, 1, -1, 1,  1]), gl.STATIC_DRAW); // buffer in data
     gl.vertexAttribPointer(gl.getAttribLocation(program, 'vertex'), 2, gl.FLOAT, false, 8, 0); // describe buffer
     gl.enableVertexAttribArray(gl.getAttribLocation(program, 'vertex')); // enable buffer
-    render(canvas, gl);
+    utils.render(canvas, gl);
   }
   
 });

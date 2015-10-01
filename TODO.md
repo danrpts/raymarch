@@ -2,6 +2,7 @@
 - [ ] Comments
 - [ ] Documentation
 - [ ] Tests
+- [ ] Document function signatures and return values
 
 # Application
 - [ ] Ui / Ux
