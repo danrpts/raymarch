@@ -6,7 +6,7 @@ module.exports = function (canvas, gl, program) {
   // temporary
   window.update = function (id, value) {
     gl.uniform1f(gl.getUniformLocation(program, id), value);
-    render(canvas, gl);
+    utils.render(canvas, gl);
   }
 
   // ctrl + mousemove = look around
@@ -26,12 +26,23 @@ module.exports = function (canvas, gl, program) {
       
       if (dragging) {
 
+        // Extract information
         var coord = utils.mouse2clip(e);
         var angles = utils.trackball(coord, 1);
+
+        // Setup model-view matrix
         var mv = mat4.create();
+
+        // Translate camera to object's frame
         mat4.translate(mv, mv, [0,0,-1]);
-        mat4.rotateY(mv, mv, delta += Math.PI/40);
+
+        // Rotate the camera
+        mat4.rotateY(mv, mv, delta += Math.PI/100);
+
+        // Translate camera back to camera's frame
         mat4.translate(mv, mv, [0,0,1]);
+
+        // Apply & render!
         gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mv'), gl.FALSE, new Float32Array(mv));
         utils.render(canvas, gl);
 

@@ -36,7 +36,7 @@ float square (vec3 point, vec3 center, float lwh) {
 // Define the entire scene here
 float scene (vec3 point) {
 	//vec3 dpoint = (vec4(point, 1)).xyz;
-	return sphere(point, vec3(0,0,-1), 0.5);//square(dpoint, vec3(0,0,-1), 0.35);
+	return min(sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0.5, 0.25, -0.5), 0.1));
 }
 
 // Get surface normal for a point

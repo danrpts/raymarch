@@ -38,6 +38,7 @@
 
 # Camera Controls
 - [ ] Ui
+- [ ] Fixed warping due to look at matrix
 - [ ] Virtual trackball movement for camera rotations
 - [ ] Splines
 
