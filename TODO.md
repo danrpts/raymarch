@@ -1,9 +1,9 @@
 # General
 - [ ] Comments
-- [ ] Documentation
 - [ ] Tests
 - [ ] Document function signatures and return values
 - [ ] Fix texture mapping problem with object rotations
+- [ ] Application functionality 'builds' the shader
 
 # Application
 - [ ] Ui / Ux
@@ -22,6 +22,10 @@
 - [ ] Fogging
 - [ ] Anti aliasing / super-sampling
 - [ ] Granularity
+
+# Shading Properties
+- [ ] ui
+- [ ] Switch between shading models
 
 # Material Properties
 - [ ] Ui

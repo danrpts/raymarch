@@ -29,14 +29,14 @@ float sphere (vec3 point, vec3 center, float radius) {
 }
 
 // Torus distance estimator
-float square (vec3 point, vec3 center, float size) {
-  return length(max(abs(point - center) - vec3(size), 0.0));
+float square (vec3 point, vec3 center, float lwh) {
+  return length(max(abs(point - center) - vec3(lwh), 0.0));
 }
 
 // Define the entire scene here
 float scene (vec3 point) {
 	vec3 dpoint = (drag * vec4(point, 1)).xyz;
-	return square(dpoint, vec3(0), 0.2);
+	return square(dpoint, vec3(0), 0.35);
 }
 
 // Get surface normal for a point
