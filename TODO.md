@@ -26,7 +26,7 @@
 - [ ] Granularity
 
 # Shading Controls
-- [ ] ui
+- [ ] Ui
 - [ ] Switch between shading models
 - [ ] Phong
 - [ ] Flat/Smooth
@@ -39,8 +39,9 @@
 
 # Camera Controls
 - [ ] Ui
-- [ ] Fixed warping due to look at matrix
+- [ ] Fix warping due to look at matrix
 - [ ] Virtual trackball movement for camera rotations
+- [ ] Trackball rotation about arbitrary axis
 - [ ] Splines
 
 # Light Properties

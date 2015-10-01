@@ -40,6 +40,10 @@ module.exports.mouse2clip = function (e) {
   return coord = [2*x/w-1, 2*(h-y)/h-1];
 }
 
+module.exports.deg2rad = function (deg) {
+  return deg*Math.PI/180;
+}
+
 // xy [] 2D coordinates
 // r float radius
 // TODO: need to fix texture mapping, i.e, when the object is rotated and we raymarch it
@@ -50,7 +54,7 @@ module.exports.mouse2clip = function (e) {
 module.exports.trackball = (function () {
 
   // Maintain closure on this point
-  var p0 = [0, 0, 0];
+  var p0 = vec3.fromValues(0, 0, 0);
 
   // temp
   var theta = 0;
@@ -58,6 +62,12 @@ module.exports.trackball = (function () {
   // Consider resetting p0 on certain canvas event
 
   return function (xy, r) {
+
+      // Setup model-view matrix
+      var mv = mat4.create();
+
+      // Translate camera to object's frame
+      //mat4.translate(mv, mv, [0,0,-1]);
 
       // Extract 2D coordinates
       var x = xy[0];
@@ -67,26 +77,23 @@ module.exports.trackball = (function () {
       var z = Math.sqrt(r * r - x * x - y * y);
 
       // End point
-      var p1 = [x, y, z];
+      var p1 = vec3.fromValues(x, y, z);
 
-      // Get axis of rotation
-      //var N = utils.cross(p0, p1);
+      // Normalized axis of rotation
+      var N = vec3.create();
+      vec3.cross(N, p0, p1);
 
-      // project Normal onto each axis with dot product
-      // then use cross product to extract rotation amount
+      theta += Math.asin(vec3.len(N));
 
-      // Approximate angle
-      //var theta = sqrt(x * x + y * y + z * z);
+      mat4.rotateY(mv, mv, theta);
 
-      // Solve for alpha, beta and gamma values using N components
-      //var alpha = ;
-      //var beta = ;
-      //var gamma = ;
+      // Translate camera back to camera's frame
+      //mat4.translate(mv, mv, [0,0,1]);
 
       // Set new start point
-      p0 = p1;
+      vec3.copy(p0, p1);
 
-      return [0, theta += 2, 0];
+      return mv;
   }
 
 }());

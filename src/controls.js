@@ -28,19 +28,7 @@ module.exports = function (canvas, gl, program) {
 
         // Extract information
         var coord = utils.mouse2clip(e);
-        var angles = utils.trackball(coord, 1);
-
-        // Setup model-view matrix
-        var mv = mat4.create();
-
-        // Translate camera to object's frame
-        mat4.translate(mv, mv, [0,0,-1]);
-
-        // Rotate the camera
-        mat4.rotateY(mv, mv, delta += Math.PI/100);
-
-        // Translate camera back to camera's frame
-        mat4.translate(mv, mv, [0,0,1]);
+        var mv = utils.trackball(coord, 1);
 
         // Apply & render!
         gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mv'), gl.FALSE, new Float32Array(mv));
