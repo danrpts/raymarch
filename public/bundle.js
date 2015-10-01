@@ -44,19 +44,15 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var glinit = __webpack_require__(1);
-	var render = __webpack_require__(2);
-	var $ = __webpack_require__(3);
+	var utils = __webpack_require__(1);
+	var $ = __webpack_require__(2);
 
 	$(function () {
 
 	  var canvas = $('#canvas')[0];
-	  var gl = glinit(canvas);
+	  var gl = utils.glinit(canvas);
 
 	  if (!!gl) {
-
-	    // temporary 
-	  	__webpack_require__(4)(gl, controls);
 
 	    canvas.width = $('.page-content').width();
 	    canvas.height = window.innerHeight;
@@ -64,7 +60,7 @@
 	    window.eye = [0,0,0];
 
 	    var vertShader = gl.createShader(gl.VERTEX_SHADER);
-	    gl.shaderSource(vertShader, __webpack_require__(5));
+	    gl.shaderSource(vertShader, __webpack_require__(3));
 	    gl.compileShader(vertShader);
 	    if (!gl.getShaderParameter(vertShader, gl.COMPILE_STATUS)) {
 	      console.warn('Vertex shader failed to compile. The error log is: %s.', gl.getShaderInfoLog(vertShader));
@@ -74,7 +70,7 @@
 	    }
 	    
 	    var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-	    gl.shaderSource(fragShader, __webpack_require__(6));
+	    gl.shaderSource(fragShader, __webpack_require__(4));
 	    gl.compileShader(fragShader);
 	    if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS)) {
 	      console.warn('Fragment shader failed to compile. The error log is: %s.', gl.getShaderInfoLog(fragShader));
@@ -108,6 +104,9 @@
 	    gl.uniform1f(gl.getUniformLocation(program, 'light_x'), $('#light_x').val());
 	    gl.uniform1f(gl.getUniformLocation(program, 'light_y'), $('#light_y').val());
 	    gl.uniform1f(gl.getUniformLocation(program, 'light_z'), $('#light_z').val());
+
+	    // temporary 
+	    __webpack_require__(5)(canvas, gl, program);
 	    
 	    // put texture on gpu
 	    var texture = gl.createTexture();
@@ -125,7 +124,7 @@
 	    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, -1,  1, 1, -1, 1,  1]), gl.STATIC_DRAW); // buffer in data
 	    gl.vertexAttribPointer(gl.getAttribLocation(program, 'vertex'), 2, gl.FLOAT, false, 8, 0); // describe buffer
 	    gl.enableVertexAttribArray(gl.getAttribLocation(program, 'vertex')); // enable buffer
-	    render(gl, canvas);
+	    utils.render(canvas, gl);
 	  }
 	  
 	});
@@ -135,8 +134,8 @@
 /* 1 */
 /***/ function(module, exports) {
 
-	module.exports = function (canvas) {
-	  gl = null;
+	module.exports.glinit = function (canvas) {
+	  var gl = null;
 	  
 	  try {    
 	    // Try to grab the standard context. If it fails, fallback to experimental.
@@ -153,11 +152,7 @@
 	  return gl;
 	}
 
-/***/ },
-/* 2 */
-/***/ function(module, exports) {
-
-	module.exports = function (gl, canvas) {
+	module.exports.render = function (canvas, gl) {
 	  if (!!gl) {
 	  
 	    // Clear the canvas
@@ -172,58 +167,84 @@
 	  }
 	}
 
+	module.exports.mouse2clip = function (e) {
+	  var c = $('#canvas');
+	  var x = e.pageX - c.offset().left;
+	  var y = e.pageY - c.offset().top;
+	  var w = c.width();
+	  var h = c.height();
+	  return coord = [2*x/w-1, 2*(h-y)/h-1];
+	}
+
+	module.exports.rotate = function (x, y, z) {
+	  var r = Math.PI / 180.0;
+	  var c = Math.cos;
+	  var s = Math.sin;
+	  var xrad = x * r;
+	  var cx = c(xrad);
+	  var sx = s(xrad);
+	  var yrad = y * r;
+	  var cy = c(yrad);
+	  var sy = s(yrad);
+	  var zrad = z * r;
+	  var cz = c(zrad);
+	  var sz = s(zrad);
+	  return [
+	    cy*cz,           -cy*sz,          sy,     0,
+	    sx*sy*cz+cx*sz,  -sx*sy*sz+cx*cz, -sx*cy, 0,
+	    -cx*sy*cz+sx*sz, cx*sy*sz+sx*cz,  cx*cy,  0,
+	    0,               0,               0,      1    
+	  ]
+	}
+
+	// not tested
+	// map a value from one coordinate axis to another
+	// from[min, max]
+	// to[min, max]
+	module.exports.map2 = function (value, from, to) {
+	    return (to[1] - to[0]) / (from[1] - from[0]) * value;
+	}
+
+
 /***/ },
-/* 3 */
+/* 2 */
 /***/ function(module, exports) {
 
 	module.exports = jQuery;
 
 /***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	module.exports = "precision highp float;\nattribute vec2 vertex;\nvarying vec2 uv;\nvoid main () {\n\tgl_Position = vec4(vertex, 0, 1);\n\tuv = gl_Position.xy;\n}"
+
+/***/ },
 /* 4 */
+/***/ function(module, exports) {
+
+	module.exports = "#define _PI_ 3.1415926535897932384626433832795\nprecision highp float;  \nvarying vec2 uv;\nuniform vec2 resolution;\nuniform vec2 mouse;\nuniform vec3 eye;\nuniform float phong_alpha;\nuniform float fineness;\nuniform float focal;\nuniform float light_x;\nuniform float light_y;\nuniform float light_z;\nuniform sampler2D mars;\nuniform mat3 rot;\nvec3 light;\nvec3 right;\nvec3 up;\nvec3 forward;\n\n// Surface threshold i.e. minimum distance to surface\nconst float ray_EPSILON = 0.001;\n\n// Max allowable steps along ray\nconst int ray_MAX_STEPS = 64;\t\t\n\n// Sphere distance estimator\nfloat sphere (vec3 point, vec3 center, float radius) {\n\treturn length(point - center) - radius;\n}\n\n// Define the entire scene here\nfloat scene (vec3 point) {\n\treturn min(sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0,0,5), 0.5));\n}\n\n// Get surface normal for a point\nvec3 normal (vec3 point) {\n\treturn vec3(scene(point+vec3(1,0,0)) - scene(point-vec3(1,0,0)),\n            \tscene(point+vec3(0,1,0)) - scene(point-vec3(0,1,0)),\n           \t \tscene(point+vec3(0,0,1)) - scene(point-vec3(0,0,1)));\n}\n\n// Get RGB phong shade for a point\nvec3 phongShade (vec3 point) {\n\n    // Get surface normal\n    vec3 N = normal(point);\n\t\n    // Get sphere mapped texture coordinate\n    vec4 texture = texture2D(mars, vec2(asin(N.x)/_PI_ + 0.5, asin(N.y)/_PI_ + 0.5));\n\n\t// Material Properties\n\tvec3 phong_ka = texture.xyz;\n\tvec3 phong_kd = texture.xyz;\n\tvec3 phong_ks = texture.xyz;\n\t\n\t// Light properties\n\tvec3 phong_Ia = vec3(0.3);\n\tvec3 phong_Id = vec3(0.7);\n\tvec3 phong_Is = vec3(1);\n\t\n\t// Get inicidient ray\n\tvec3 L = normalize(light - point);\n\t\n\t// Get viewer ray\n\tvec3 V = normalize(eye.xyz - point);\n\t\n\t// Get reflection ray; Blinn-Phong style\n\tvec3 H = normalize(V+L);\n\t\n\t// Ambient\n\treturn (phong_ka * phong_Ia)\n\t\n\t// Diffuse\n\t+ (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)\n\t\n\t// Specular\n\t+ ((dot(N, L) > 0.0) \n\t\t? (phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)\n\t\t: vec3(0))\n\t;\n\t\n}\n\n// March along a ray defined by an origin and direction\nvec4 rayMarch (vec3 rO, vec3 rD) {\n\n\t// Default/sky color\n\tvec4 shade = vec4(0, 0, 0, 1);\n\n\t// Marched distance\n\tfloat distance = 0.0;\n\n\t// Begin marching\n\tvec3 ray;\n\tfor (int i = 0; i < ray_MAX_STEPS; ++i) {\n\t\t\n\t\t// Formulate the ray\n\t\tray = rO + distance * rD;\n\n\t\t// Cast ray into scene\n\t\tfloat step = scene(ray);\n\t\t\n\t\t// If within the surface threshold\n\t\tif (step < ray_EPSILON / fineness) {\n\t\t\t\n\t\t\t// Apply Blinn-Phong shading or use `distance` to shade\n\t\t\tshade = vec4(phongShade(ray), 1);\n\t\t\tbreak;\n\t\t}\n\t\t\n\t\t// Increment safe distance\n\t\tdistance += step;\n\t}\n\n\t// Done!\n\treturn shade;\n}\n\nmat3 lookat (vec3 eye, vec3 at, vec3 up) {\n\tvec3 n = normalize(at - eye);\n\tvec3 u = normalize(cross(n, up));\n\tvec3 v = normalize(cross(u, n));\n\treturn mat3(u, v, n);\n}\n\nvoid main () {\n\n\t// Define\n\tlight = vec3(light_x, light_y, light_z);\n\tup = vec3(0,1,0);\n\t//right = vec3(1,0,0);\n\t//forward = vec3(0,0,-1);\n\n    // Look at point\n\tvec3 at = vec3(mouse, -focal);\n\n\t// Aspect ratio\n\tfloat aR = resolution.x / resolution.y;\n\n\t// Ray origin\n\tvec3 ray_Origin = eye;\n\n    // Orient the viewer\n    mat3 orient = lookat(ray_Origin, at, up);\n\t\n\t// Ray directon look around\n\tvec3 ray_Direction = orient * normalize(vec3(uv.x * aR, uv.y, focal));\n\n\t// Ray direction perspective\n    //vec3 ray_Direction = normalize((right * uv.x * aR) + (up * uv.y) + (forward * focal));\n\n\t// Ray origin orthographic\n\t//vec3 ray_Origin = (right * uv.x * aR) + (up * uv.y);\n\n\t// Ray directon orthographic\n\t//vec3 ray_Direction = forward;\n\n\t// March to implicit surface\n\tvec4 color = rayMarch(ray_Origin, ray_Direction);\n\t\n\t// Final color\n\tgl_FragColor = color;\n\t\n}"
+
+/***/ },
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var render = __webpack_require__(2);
-	var $ = __webpack_require__(3);
+	var utils = __webpack_require__(1);
+	var $ = __webpack_require__(2);
 
-	module.exports = function (gl, canvas) {
+	module.exports = function (canvas, gl, program) {
 
 	  // temporary
 	  window.update = function (id, value) {
 	    gl.uniform1f(gl.getUniformLocation(program, id), value);
-	    render(gl, canvas);
-	  }
-
-
-	  rotate = function rotate (x, y, z) {
-	    var r = Math.PI / 180.0,
-	      c = Math.cos,
-	      s = Math.sin,
-	      xrad = x * r,
-	      cx = c(xrad),
-	      sx = s(xrad),
-	      yrad = y * r,
-	      cy = c(yrad),
-	      sy = s(yrad),
-	      zrad = z * r,
-	      cz = c(zrad),
-	      sz = s(zrad);
-	    return [
-	      cy*cz,           -cy*sz,          sy,    
-	      sx*sy*cz+cx*sz,  -sx*sy*sz+cx*cz, -sx*cy,
-	      -cx*sy*cz+sx*sz, cx*sy*sz+sx*cz,  cx*cy    
-	    ]
+	    render(canvas, gl);
 	  }
 
 	  // ctrl + mousemove = look around
 	  $('#canvas').mousemove(function (e) {
 	    if (e.ctrlKey) {
-	      var x = e.pageX - $(this).offset().left;
-	      var y = e.pageY - $(this).offset().top;
-	      var w = $(this).width();
-	      var h = $(this).height();
-	      var coord = [2*x/w-1, 2*(h-y)/h-1];
+	      var coord = utils.mouse2clip(e);
 	      gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(coord));
-	      render(gl, canvas);
+	      utils.render(canvas, gl);
 	    }
 	  });
 
@@ -251,18 +272,6 @@
 
 	}
 
-
-/***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-	module.exports = "precision highp float;\r\nattribute vec2 vertex;\r\nvarying vec2 uv;\r\nvoid main () {\r\n\tgl_Position = vec4(vertex, 0, 1);\r\n\tuv = gl_Position.xy;\r\n}"
-
-/***/ },
-/* 6 */
-/***/ function(module, exports) {
-
-	module.exports = "#define _PI_ 3.1415926535897932384626433832795\r\nprecision highp float;  \r\nvarying vec2 uv;\r\nuniform vec2 resolution;\r\nuniform vec2 mouse;\r\nuniform vec3 eye;\r\nuniform float phong_alpha;\r\nuniform float fineness;\r\nuniform float focal;\r\nuniform float light_x;\r\nuniform float light_y;\r\nuniform float light_z;\r\nuniform sampler2D mars;\r\nuniform mat3 rot;\r\nvec3 light;\r\nvec3 right;\r\nvec3 up;\r\nvec3 forward;\r\n\r\n// Surface threshold i.e. minimum distance to surface\r\nconst float ray_EPSILON = 0.001;\r\n\r\n// Max allowable steps along ray\r\nconst int ray_MAX_STEPS = 64;\t\t\r\n\r\n// Sphere distance estimator\r\nfloat sphere (vec3 point, vec3 center, float radius) {\r\n\treturn length(point - center) - radius;\r\n}\r\n\r\n// Define the entire scene here\r\nfloat scene (vec3 point) {\r\n\treturn min(sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0,0,5), 0.5));\r\n}\r\n\r\n// Get surface normal for a point\r\nvec3 normal (vec3 point) {\r\n\treturn vec3(scene(point+vec3(1,0,0)) - scene(point-vec3(1,0,0)),\r\n            \tscene(point+vec3(0,1,0)) - scene(point-vec3(0,1,0)),\r\n           \t \tscene(point+vec3(0,0,1)) - scene(point-vec3(0,0,1)));\r\n}\r\n\r\n// Get RGB phong shade for a point\r\nvec3 phongShade (vec3 point) {\r\n\r\n    // Get surface normal\r\n    vec3 N = normal(point);\r\n\t\r\n    // Get sphere mapped texture coordinate\r\n    vec4 texture = texture2D(mars, vec2(asin(N.x)/_PI_ + 0.5, asin(N.y)/_PI_ + 0.5));\r\n\r\n\t// Material Properties\r\n\tvec3 phong_ka = texture.xyz;\r\n\tvec3 phong_kd = texture.xyz;\r\n\tvec3 phong_ks = texture.xyz;\r\n\t\r\n\t// Light properties\r\n\tvec3 phong_Ia = vec3(0.3);\r\n\tvec3 phong_Id = vec3(0.7);\r\n\tvec3 phong_Is = vec3(1);\r\n\t\r\n\t// Get inicidient ray\r\n\tvec3 L = normalize(light - point);\r\n\t\r\n\t// Get viewer ray\r\n\tvec3 V = normalize(eye.xyz - point);\r\n\t\r\n\t// Get reflection ray; Blinn-Phong style\r\n\tvec3 H = normalize(V+L);\r\n\t\r\n\t// Ambient\r\n\treturn (phong_ka * phong_Ia)\r\n\t\r\n\t// Diffuse\r\n\t+ (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)\r\n\t\r\n\t// Specular\r\n\t+ ((dot(N, L) > 0.0) \r\n\t\t? (phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)\r\n\t\t: vec3(0))\r\n\t;\r\n\t\r\n}\r\n\r\n// March along a ray defined by an origin and direction\r\nvec4 rayMarch (vec3 rO, vec3 rD) {\r\n\r\n\t// Default/sky color\r\n\tvec4 shade = vec4(0, 0, 0, 1);\r\n\r\n\t// Marched distance\r\n\tfloat distance = 0.0;\r\n\r\n\t// Begin marching\r\n\tvec3 ray;\r\n\tfor (int i = 0; i < ray_MAX_STEPS; ++i) {\r\n\t\t\r\n\t\t// Formulate the ray\r\n\t\tray = rO + distance * rD;\r\n\r\n\t\t// Cast ray into scene\r\n\t\tfloat step = scene(ray);\r\n\t\t\r\n\t\t// If within the surface threshold\r\n\t\tif (step < ray_EPSILON / fineness) {\r\n\t\t\t\r\n\t\t\t// Apply Blinn-Phong shading or use `distance` to shade\r\n\t\t\tshade = vec4(phongShade(ray), 1);\r\n\t\t\tbreak;\r\n\t\t}\r\n\t\t\r\n\t\t// Increment safe distance\r\n\t\tdistance += step;\r\n\t}\r\n\r\n\t// Done!\r\n\treturn shade;\r\n}\r\n\r\nmat3 lookat (vec3 eye, vec3 at, vec3 up) {\r\n\tvec3 n = normalize(at - eye);\r\n\tvec3 u = normalize(cross(n, up));\r\n\tvec3 v = normalize(cross(u, n));\r\n\treturn mat3(u, v, n);\r\n}\r\n\r\nvoid main () {\r\n\r\n\t// Define\r\n\tlight = vec3(light_x, light_y, light_z);\r\n\tup = vec3(0,1,0);\r\n\t//right = vec3(1,0,0);\r\n\t//forward = vec3(0,0,-1);\r\n\r\n    // Look at point\r\n\tvec3 at = vec3(mouse, -focal);\r\n\r\n\t// Aspect ratio\r\n\tfloat aR = resolution.x / resolution.y;\r\n\r\n\t// Ray origin\r\n\tvec3 ray_Origin = eye;\r\n\r\n    // Orient the viewer\r\n    mat3 orient = lookat(ray_Origin, at, up);\r\n\t\r\n\t// Ray directon look around\r\n\tvec3 ray_Direction = orient * normalize(vec3(uv.x * aR, uv.y, focal));\r\n\r\n\t// Ray direction perspective\r\n    //vec3 ray_Direction = normalize((right * uv.x * aR) + (up * uv.y) + (forward * focal));\r\n\r\n\t// Ray origin orthographic\r\n\t//vec3 ray_Origin = (right * uv.x * aR) + (up * uv.y);\r\n\r\n\t// Ray directon orthographic\r\n\t//vec3 ray_Direction = forward;\r\n\r\n\t// March to implicit surface\r\n\tvec4 color = rayMarch(ray_Origin, ray_Direction);\r\n\t\r\n\t// Final color\r\n\tgl_FragColor = color;\r\n\t\r\n}"
 
 /***/ }
 /******/ ]);

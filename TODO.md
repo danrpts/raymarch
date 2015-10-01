@@ -3,6 +3,7 @@
 - [ ] Documentation
 - [ ] Tests
 - [ ] Document function signatures and return values
+- [ ] Fix texture mapping problem with object rotations
 
 # Application
 - [ ] Ui / Ux

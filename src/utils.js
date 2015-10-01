@@ -40,26 +40,88 @@ module.exports.mouse2clip = function (e) {
   return coord = [2*x/w-1, 2*(h-y)/h-1];
 }
 
+
 module.exports.rotate = function (x, y, z) {
-  var r = Math.PI / 180.0;
-  var c = Math.cos;
-  var s = Math.sin;
-  var xrad = x * r;
-  var cx = c(xrad);
-  var sx = s(xrad);
-  var yrad = y * r;
-  var cy = c(yrad);
-  var sy = s(yrad);
-  var zrad = z * r;
-  var cz = c(zrad);
-  var sz = s(zrad);
-  return [
-    cy*cz,           -cy*sz,          sy,     0,
-    sx*sy*cz+cx*sz,  -sx*sy*sz+cx*cz, -sx*cy, 0,
-    -cx*sy*cz+sx*sz, cx*sy*sz+sx*cz,  cx*cy,  0,
-    0,               0,               0,      1    
-  ]
+
+  if (Array.isArray(x)) {
+
+    return module.exports.rotate.apply(this, x);
+
+  } else {
+
+    var r = Math.PI / 180.0;
+    var c = Math.cos;
+    var s = Math.sin;
+    var xrad = x * r;
+    var cx = c(xrad);
+    var sx = s(xrad);
+    var yrad = y * r;
+    var cy = c(yrad);
+    var sy = s(yrad);
+    var zrad = z * r;
+    var cz = c(zrad);
+    var sz = s(zrad);
+
+    return [
+      cy*cz,           -cy*sz,          sy,     0,
+      sx*sy*cz+cx*sz,  -sx*sy*sz+cx*cz, -sx*cy, 0,
+      -cx*sy*cz+sx*sz, cx*sy*sz+sx*cz,  cx*cy,  0,
+      0,               0,               0,      1    
+    ]
+
+  }
 }
+
+// xy [] 2D coordinates
+// r float radius
+// TODO: need to fix texture mapping, i.e, when the object is rotated and we raymarch it
+/// the value of the hit point is the same because it originated from the same location
+//// and so the texture maps to the same location no matter what side of object we view
+//// [1] One solution is to rotate the camera instead of the object, clean
+//// [2] Somehow keep track of rotations and modify point, ugly
+module.exports.trackball = (function () {
+
+  // Maintain closure on this point
+  var p0 = [0, 0, 0];
+
+  // temp
+  var theta = 0;
+
+  // Consider resetting p0 on certain canvas event
+
+  return function (xy, r) {
+
+      // Extract 2D coordinates
+      var x = xy[0];
+      var y = xy[1];
+
+      // Solve for 'z' on virtual trackball of radius 'r'
+      var z = Math.sqrt(r * r - x * x - y * y);
+
+      // End point
+      var p1 = [x, y, z];
+
+      // Get axis of rotation
+      //var N = utils.cross(p0, p1);
+      //x = N[0];
+      //y = N[1];
+      //z = N[2];
+
+      // Approximate angle
+      //var theta = sqrt(x * x + y * y + z * z);
+
+      // Solve for alpha, beta and gamma values using N components
+      //var alpha = ;
+      //var beta = ;
+      //var gamma = ;
+
+      // Set new start point
+      p0 = p1;
+
+      return [0, theta += 2, 0];
+  }
+
+}());
 
 // not tested
 // map a value from one coordinate axis to another

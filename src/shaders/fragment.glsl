@@ -11,7 +11,7 @@ uniform float light_x;
 uniform float light_y;
 uniform float light_z;
 uniform sampler2D mars;
-uniform mat3 rot;
+uniform mat4 drag;
 vec3 light;
 vec3 right;
 vec3 up;
@@ -28,9 +28,15 @@ float sphere (vec3 point, vec3 center, float radius) {
 	return length(point - center) - radius;
 }
 
+// Torus distance estimator
+float square (vec3 point, vec3 center, float size) {
+  return length(max(abs(point - center) - vec3(size), 0.0));
+}
+
 // Define the entire scene here
 float scene (vec3 point) {
-	return min(sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0,0,5), 0.5));
+	vec3 dpoint = (drag * vec4(point, 1)).xyz;
+	return square(dpoint, vec3(0), 0.2);
 }
 
 // Get surface normal for a point

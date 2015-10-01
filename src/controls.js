@@ -18,26 +18,22 @@ module.exports = function (canvas, gl, program) {
     }
   });
 
+  // drag about implicit axis
+  // needs work
   $('#canvas').mousedown(function (e) {
-
+    var dragging = true;
+    $('#canvas').mousemove(function (e) {
+      if (dragging) {
+        var coord = utils.mouse2clip(e);
+        var angles = utils.trackball(coord);
+        var rotations = utils.rotate(angles);
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, 'drag'), gl.FALSE, new Float32Array(rotations));
+        utils.render(canvas, gl);
+      }
+    });
+    $('#canvas').mouseup(function (e) {
+      dragging = false;
+    });
   });
-
-  $('#canvas').keydown(function (e) {
-    switch (e.which) {
-      case 87: w(); break;
-      case 65: a(); break;
-      case 83: s(); break;
-      case 68: d(); break;
-      default: break;
-    }
-  });
-
-  function w() {} 
-
-  function a() {} 
-
-  function s() {} 
-
-  function d() {}
 
 }
