@@ -40,38 +40,6 @@ module.exports.mouse2clip = function (e) {
   return coord = [2*x/w-1, 2*(h-y)/h-1];
 }
 
-
-module.exports.rotate = function (x, y, z) {
-
-  if (Array.isArray(x)) {
-
-    return module.exports.rotate.apply(this, x);
-
-  } else {
-
-    var r = Math.PI / 180.0;
-    var c = Math.cos;
-    var s = Math.sin;
-    var xrad = x * r;
-    var cx = c(xrad);
-    var sx = s(xrad);
-    var yrad = y * r;
-    var cy = c(yrad);
-    var sy = s(yrad);
-    var zrad = z * r;
-    var cz = c(zrad);
-    var sz = s(zrad);
-
-    return [
-      cy*cz,           -cy*sz,          sy,     0,
-      sx*sy*cz+cx*sz,  -sx*sy*sz+cx*cz, -sx*cy, 0,
-      -cx*sy*cz+sx*sz, cx*sy*sz+sx*cz,  cx*cy,  0,
-      0,               0,               0,      1    
-    ]
-
-  }
-}
-
 // xy [] 2D coordinates
 // r float radius
 // TODO: need to fix texture mapping, i.e, when the object is rotated and we raymarch it
@@ -106,6 +74,9 @@ module.exports.trackball = (function () {
       //x = N[0];
       //y = N[1];
       //z = N[2];
+
+      // project Normal onto each axis with dot product
+      // then use cross product to extract rotation amount
 
       // Approximate angle
       //var theta = sqrt(x * x + y * y + z * z);

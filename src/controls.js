@@ -21,15 +21,22 @@ module.exports = function (canvas, gl, program) {
   // drag about implicit axis
   // needs work
   $('#canvas').mousedown(function (e) {
-    var dragging = true;
+    var dragging = true, delta = 0;
     $('#canvas').mousemove(function (e) {
+      
       if (dragging) {
+
         var coord = utils.mouse2clip(e);
-        var angles = utils.trackball(coord);
-        var rotations = utils.rotate(angles);
-        gl.uniformMatrix4fv(gl.getUniformLocation(program, 'drag'), gl.FALSE, new Float32Array(rotations));
+        var angles = utils.trackball(coord, 1);
+        var mv = mat4.create();
+        mat4.translate(mv, mv, [0,0,-1]);
+        mat4.rotateY(mv, mv, delta += Math.PI/40);
+        mat4.translate(mv, mv, [0,0,1]);
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mv'), gl.FALSE, new Float32Array(mv));
         utils.render(canvas, gl);
+
       }
+
     });
     $('#canvas').mouseup(function (e) {
       dragging = false;

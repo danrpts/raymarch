@@ -20,12 +20,16 @@
 
 # Render Controls
 - [ ] Fogging
+- [ ] Shadows
 - [ ] Anti aliasing / super-sampling
 - [ ] Granularity
 
-# Shading Properties
+# Shading Controls
 - [ ] ui
 - [ ] Switch between shading models
+- [ ] Phong
+- [ ] Flat/Smooth
+- [ ] Ambient Occlusion
 
 # Material Properties
 - [ ] Ui

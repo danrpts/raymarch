@@ -11,7 +11,7 @@ uniform float light_x;
 uniform float light_y;
 uniform float light_z;
 uniform sampler2D mars;
-uniform mat4 drag;
+uniform mat4 mv;
 vec3 light;
 vec3 right;
 vec3 up;
@@ -35,8 +35,8 @@ float square (vec3 point, vec3 center, float lwh) {
 
 // Define the entire scene here
 float scene (vec3 point) {
-	vec3 dpoint = (drag * vec4(point, 1)).xyz;
-	return square(dpoint, vec3(0), 0.35);
+	//vec3 dpoint = (vec4(point, 1)).xyz;
+	return sphere(point, vec3(0,0,-1), 0.5);//square(dpoint, vec3(0,0,-1), 0.35);
 }
 
 // Get surface normal for a point
@@ -145,7 +145,7 @@ void main () {
 	float aR = resolution.x / resolution.y;
 
 	// Ray origin
-	vec3 ray_Origin = eye;
+	vec3 ray_Origin = (mv * vec4(eye, 1)).xyz;
 
     // Orient the viewer
     mat3 orient = lookat(ray_Origin, at, up);
