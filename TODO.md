@@ -2,6 +2,7 @@
 - [ ] Comments
 - [ ] Tests
 - [ ] Document function signatures and return values
+- [ ] Fix incorrect sphere texture mapping
 - [ ] Fix texture mapping problem with object rotations
 - [ ] Application functionality 'builds' the shader
 

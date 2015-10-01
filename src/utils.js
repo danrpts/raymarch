@@ -71,9 +71,6 @@ module.exports.trackball = (function () {
 
       // Get axis of rotation
       //var N = utils.cross(p0, p1);
-      //x = N[0];
-      //y = N[1];
-      //z = N[2];
 
       // project Normal onto each axis with dot product
       // then use cross product to extract rotation amount

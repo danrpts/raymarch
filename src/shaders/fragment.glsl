@@ -36,7 +36,7 @@ float square (vec3 point, vec3 center, float lwh) {
 // Define the entire scene here
 float scene (vec3 point) {
 	//vec3 dpoint = (vec4(point, 1)).xyz;
-	return min(sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0.5, 0.25, -0.5), 0.1));
+	return sphere(point, vec3(0,0,-1), 0.5);
 }
 
 // Get surface normal for a point
@@ -51,9 +51,9 @@ vec3 phongShade (vec3 point) {
 
     // Get surface normal
     vec3 N = normal(point);
-	
+
     // Get sphere mapped texture coordinate
-    vec4 texture = texture2D(mars, vec2(asin(N.x)/_PI_ + 0.5, asin(N.y)/_PI_ + 0.5));
+    vec4 texture = texture2D(mars, vec2(0.5 + asin(N.x)/_PI_, 0.5 + asin(N.y)/_PI_));
 
 	// Material Properties
 	vec3 phong_ka = texture.xyz;
