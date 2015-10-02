@@ -44,6 +44,7 @@
 - [ ] Trackball rotation about arbitrary axis
 - [ ] User quarternian rotations to avoid Gimble lock
 - [ ] Project points outside of trackball on to the hemisphere
+- [ ] Fix bug when mouse drags to very edge of canvas
 - [ ] Splines
 
 # Light Properties
