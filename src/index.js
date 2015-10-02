@@ -11,7 +11,7 @@ $(function () {
     canvas.width = $('.page-content').width();
     canvas.height = window.innerHeight;
 
-    window.eye = [0,0,1];
+    window.eye = [0,0,0];
 
     var vertShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertShader, require('./shaders/vertex.glsl'));

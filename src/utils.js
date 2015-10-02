@@ -110,11 +110,16 @@ module.exports.trackball = (function () {
 
       // Normalized axis of rotation
       var N = vec3.create();
+
+      // Bug with direction of rotation
       vec3.cross(N, p1, p0);
       theta = Math.asin(vec3.len(N) / (vec3.len(p0) * vec3.len(p1)));
       vec3.normalize(N, N);
       
+
+      mat4.translate(mv, mv, [0,0,-1]);
       mat4.rotate(mv, mv, theta, N);
+      mat4.translate(mv, mv, [0,0,1]);
 
       // Set new start point
       vec3.copy(p0, p1);
