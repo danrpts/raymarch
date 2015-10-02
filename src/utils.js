@@ -91,6 +91,8 @@ module.exports.trackball = (function () {
     var x = xy[0];
     var y = xy[1];
 
+    // TODO: Project out of bounds xy coordinate
+
     // Solve for 'z' on virtual trackball of radius 'r'
     var z = Math.sqrt(r * r - x * x - y * y);
 
@@ -103,17 +105,20 @@ module.exports.trackball = (function () {
       p0 = vec3.create();
       vec3.copy(p0, p1);
 
-      // Return inital identity matrix
+      // Returns identity matrix
       return mv;
 
     } else {
 
-      // Normalized axis of rotation
+      // Set axis of rotation
       var N = vec3.create();
-
-      // Bug with direction of rotation
+       // BUG::INCONSISTENCY: should be vec3.cross(p0, p1) for ccw rotation but it is not
       vec3.cross(N, p1, p0);
-      theta = Math.asin(vec3.len(N) / (vec3.len(p0) * vec3.len(p1)));
+
+      // Approximate angle between p0 and p1
+      theta = vec3.len(N) / (vec3.len(p0) * vec3.len(p1));
+
+      // Normalize the axis of rotation
       vec3.normalize(N, N);
       
       // Move camera to object frame
