@@ -84,19 +84,22 @@ module.exports.trackball = (function () {
     p0 = null;
   });
 
-  return function (xy, r) {
+  return function (coord, r) {
 
-    // Extract 2D coordinates
-    var x = xy[0];
-    var y = xy[1];
+    // Check x-y is on trackball
+    var d = vec2.length.call(coord, coord);
+    if (d > r) {
+      // TODO: Project out of bounds xy coordinate
+      coord[2] = 0;
 
-    // TODO: Project out of bounds xy coordinate
-
-    // Solve for 'z' on virtual trackball of radius 'r'
-    var z = Math.sqrt(r * r - x * x - y * y);
+    } else {
+      
+      // Solve for 'z' on virtual trackball of radius 'r'
+      coord[2] = Math.sqrt(r * r - d);
+    }
 
     // End point
-    var p1 = vec3.fromValues(x, y, z);
+    var p1 = vec3.fromValues.apply(coord, coord);
 
     if (p0 === null) {
 
@@ -115,7 +118,7 @@ module.exports.trackball = (function () {
       vec3.cross(N, p1, p0);
 
       // Approximate angle between p0 and p1
-      theta = vec3.len(N) / (vec3.len(p0) * vec3.len(p1));
+      theta = vec3.length(N) / (vec3.length(p0) * vec3.length(p1));
 
       // Normalize the axis of rotation
       vec3.normalize(N, N);
