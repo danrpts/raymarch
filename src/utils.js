@@ -116,9 +116,13 @@ module.exports.trackball = (function () {
       theta = Math.asin(vec3.len(N) / (vec3.len(p0) * vec3.len(p1)));
       vec3.normalize(N, N);
       
-
+      // Move camera to object frame
       mat4.translate(mv, mv, [0,0,-1]);
+
+      // Apply transformation
       mat4.rotate(mv, mv, theta, N);
+
+      // Move camera from object frame
       mat4.translate(mv, mv, [0,0,1]);
 
       // Set new start point
@@ -129,11 +133,3 @@ module.exports.trackball = (function () {
   }
 
 }());
-
-// not tested
-// map a value from one coordinate axis to another
-// from[min, max]
-// to[min, max]
-module.exports.map2 = function (value, from, to) {
-    return (to[1] - to[0]) / (from[1] - from[0]) * value;
-}
