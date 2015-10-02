@@ -43,6 +43,7 @@
 - [ ] Virtual trackball movement for camera rotations
 - [ ] Trackball rotation about arbitrary axis
 - [ ] User quarternian rotations to avoid Gimble lock
+- [ ] Project points outside of trackball on to the hemisphere
 - [ ] Splines
 
 # Light Properties
