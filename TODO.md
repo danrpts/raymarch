@@ -42,6 +42,7 @@
 - [ ] Fix warping due to look at matrix
 - [ ] Virtual trackball movement for camera rotations
 - [ ] Trackball rotation about arbitrary axis
+- [ ] User quarternian rotations to avoid Gimble lock
 - [ ] Splines
 
 # Light Properties
