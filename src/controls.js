@@ -12,7 +12,7 @@ module.exports = function (canvas, gl, program) {
   // ctrl + mousemove = look around
   $('#canvas').mousemove(function (e) {
     if (e.ctrlKey) {
-      var coord = utils.mouse2clip(e);
+      var coord = utils.clipCoords(e);
       gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(coord));
       utils.render(canvas, gl);
     }
@@ -22,12 +22,17 @@ module.exports = function (canvas, gl, program) {
   // needs work
   $('#canvas').mousedown(function (e) {
     var dragging = true, delta = 0;
+
+    $('#canvas').mouseout(function (e) {
+      dragging = false;
+    });
+
     $('#canvas').mousemove(function (e) {
-      
+
       if (dragging) {
 
         // Extract information
-        var coord = utils.mouse2clip(e);
+        var coord = utils.clipCoords(e);
         var mv = utils.trackball(coord, 1);
 
         // Apply & render!
@@ -37,9 +42,12 @@ module.exports = function (canvas, gl, program) {
       }
 
     });
+
+    // Stop calculating motion
     $('#canvas').mouseup(function (e) {
       dragging = false;
     });
+
   });
 
 }
