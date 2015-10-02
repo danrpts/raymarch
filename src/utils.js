@@ -35,26 +35,25 @@ module.exports.screenCoords = function (e) {
   var c = $('#canvas');
   var x = e.pageX - c.offset().left;
   var y = e.pageY - c.offset().top;
-  return [x, y];
-}
-
-module.exports.normalizedCoords = function (e) {
-  var c = $('#canvas');
-  var x = e.pageX - c.offset().left;
-  var y = e.pageY - c.offset().top;
-  var w = c.width();
   var h = c.height();
-  return [x/w, y/h];
+  return [x, h-y]; // flip y axis
 }
 
-module.exports.clipCoords = function (e) {
+module.exports.normalizedScreenCoords = function (e) {
   var c = $('#canvas');
   var xy = module.exports.screenCoords(e);
   var x = xy[0];
   var y = xy[1];
   var w = c.width();
   var h = c.height();
-  return coord = [2*x/w-1, 2*(h-y)/h-1];
+  return [x/w, y/h]; // normalize
+}
+
+module.exports.clipCoords = function (e) {
+  var xy = module.exports.normalizedScreenCoords(e);
+  var x = xy[0];
+  var y = xy[1];
+  return coord = [2*x-1, 2*y-1]; // clip 
 }
 
 module.exports.deg2rad = function (deg) {
@@ -133,6 +132,7 @@ module.exports.trackball = (function () {
       // Set new start point
       vec3.copy(p0, p1);
 
+      // Returns matrix for moving camera
       return mv;
     }
   }

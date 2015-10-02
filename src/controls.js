@@ -33,6 +33,7 @@ module.exports = function (canvas, gl, program) {
 
         // Extract rotation matrix from coordinates
         var coord = utils.clipCoords(e);
+        console.log(coord);
         var mv = utils.trackball(coord, 1);
 
         // Apply & render!
