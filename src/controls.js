@@ -31,7 +31,7 @@ module.exports = function (canvas, gl, program) {
 
       if (dragging) {
 
-        // Extract information
+        // Extract rotation matrix from coordinates
         var coord = utils.clipCoords(e);
         var mv = utils.trackball(coord, 1);
 

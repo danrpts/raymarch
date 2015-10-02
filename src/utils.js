@@ -110,34 +110,11 @@ module.exports.trackball = (function () {
 
       // Normalized axis of rotation
       var N = vec3.create();
-      vec3.cross(N, p0, p1);
-      theta = vec3.len(N);
-      console.log("Theta z: ", theta);
+      vec3.cross(N, p1, p0);
+      theta = Math.asin(vec3.len(N) / (vec3.len(p0) * vec3.len(p1)));
       vec3.normalize(N, N);
       
-      // Extracting theta_x as counter clockwise rotation
-      // 1) Length of vector projected onto yz plane by N
-      var d = Math.sqrt(N[1] * N[1] + N[2] * N[2]);
-
-      // 2) Angle from [0, PI] between projection and N
-      var theta_x = Math.acos(N[2] / d);
-      console.log("Theta x: ", theta_x);
-      // 3) Apply x rotation to pull N onto xz plane
-      mat4.rotateX(mv, mv, theta_x);
-
-      // Extracting theta_y as clockwise rotation
-
-      var e = Math.sqrt(1 - N[0] * N[0]);
-      var theta_y = -Math.acos(e);
-      console.log("Theta y: ", theta_y);
-      mat4.rotateY(mv, mv, theta_y);
-
-      // Rotate about z
-      mat4.rotateZ(mv, mv, theta);
-
-      // Undo alignment with z
-      mat4.rotateY(mv, mv, -theta_y);
-      mat4.rotateX(mv, mv, -theta_x);
+      mat4.rotate(mv, mv, theta, N);
 
       // Set new start point
       vec3.copy(p0, p1);
