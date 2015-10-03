@@ -10,18 +10,19 @@ uniform float focal;
 uniform float light_x;
 uniform float light_y;
 uniform float light_z;
-uniform sampler2D mars;
+uniform sampler2D image;
 uniform mat4 mv;
 vec3 light;
 vec3 right;
 vec3 up;
 vec3 forward;
+vec3 meye;
 
 // Surface threshold i.e. minimum distance to surface
-const float ray_EPSILON = 0.001;
+float ray_EPSILON = 0.01 / fineness;
 
 // Max allowable steps along ray
-const int ray_MAX_STEPS = 64;		
+const int ray_MAX_STEPS = 64;
 
 // Sphere distance estimator
 float sphere (vec3 point, vec3 center, float radius) {
@@ -35,16 +36,15 @@ float square (vec3 point, vec3 center, float lwh) {
 
 // Define the entire scene here
 float scene (vec3 point) {
-  vec3 dpoint = (mv * vec4(point, 1)).xyz;
-  return square(dpoint, vec3(0,0,-1), 0.35); 
-  //min ( sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0.5,0.5,-1), 0.1) );//
+  return sphere(point, vec3(0,0,-1), 0.5);
+  		 
 }
 
 // Get surface normal for a point
 vec3 normal (vec3 point) {
-  vec3 x = vec3(1,0,0);
-  vec3 y = vec3(0,1,0);
-  vec3 z = vec3(0,0,1);
+  vec3 x = vec3(ray_EPSILON,0,0);
+  vec3 y = vec3(0,ray_EPSILON,0);
+  vec3 z = vec3(0,0,ray_EPSILON);
   return normalize(vec3(
     scene(point+x) - scene(point-x),
     scene(point+y) - scene(point-y),
@@ -58,15 +58,16 @@ vec3 phongShade (vec3 point) {
   vec3 N = normal(point);
 
   // Get sphere mapped texture coordinate
-  vec4 texture = texture2D(mars, vec2(0.5 + asin(N.x)/_PI_, 0.5 + asin(N.y)/_PI_));
+  //vec2 texels = vec2(asin(N.x), asin(N.y)) / _PI_ + 0.5;
+  //vec4 texture = texture2D(image, texels);
 
   // Material Properties
-  vec3 phong_ka = texture.xyz;
-  vec3 phong_kd = texture.xyz;
-  vec3 phong_ks = texture.xyz;
+  vec3 phong_ka = vec3(0);
+  vec3 phong_kd = vec3(0.7);
+  vec3 phong_ks = vec3(1);
   
   // Light properties
-  vec3 phong_Ia = vec3(0.3);
+  vec3 phong_Ia = vec3(0);
   vec3 phong_Id = vec3(0.7);
   vec3 phong_Is = vec3(1);
   
@@ -74,13 +75,17 @@ vec3 phongShade (vec3 point) {
   vec3 L = normalize(light - point);
   
   // Get viewer ray
-  vec3 V = normalize(eye.xyz - point);
+  vec3 V = normalize(meye - point);
   
   // Get reflection ray; Blinn-Phong style
-  vec3 H = normalize(V+L);
+  vec3 H = normalize(L + V);
   
+  
+  // Sum and return final value
+  return 
+
   // Ambient
-  return (phong_ka * phong_Ia)
+  (phong_ka * phong_Ia)
   
   // Diffuse
   + (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)
@@ -94,29 +99,29 @@ vec3 phongShade (vec3 point) {
 }
 
 // March along a ray defined by an origin and direction
-vec4 rayMarch (vec3 rO, vec3 rD) {
+vec4 rayMarch (vec3 pO, vec3 rD) {
 
 	// Default/sky color
-	vec4 shade = vec4(0, 0, 0, 1);
+	vec4 shade = vec4(0.1, 0.1, 0.3, 1);
 
 	// Marched distance
 	float distance = 0.0;
 
 	// Begin marching
-	vec3 ray;
+	vec3 p1;
 	for (int i = 0; i < ray_MAX_STEPS; ++i) {
 		
-		// Formulate the ray
-		ray = rO + distance * rD;
+		// Formulate p1 with point-vector addition
+		p1 = pO + distance * rD;
 
-		// Cast ray into scene
-		float step = scene(ray);
+		// Check point p1 against CSG surfaces
+		float step = scene(p1);
 		
-		// If within the surface threshold
-		if (step < ray_EPSILON / fineness) {
+		// If within the minimum surface threshold
+		if (step < ray_EPSILON) {
 			
-			// Apply Blinn-Phong shading or use `distance` to shade
-			shade = vec4(phongShade(ray), 1);
+			// Apply Blinn-Phong shading
+			shade = vec4(phongShade(p1), 1);
 			break;
 		}
 		
@@ -128,8 +133,8 @@ vec4 rayMarch (vec3 rO, vec3 rD) {
 	return shade;
 }
 
-mat3 lookat (vec3 eye, vec3 at, vec3 up) {
-	vec3 n = normalize(at - eye);
+mat3 lookat (vec3 from, vec3 at, vec3 up) {
+	vec3 n = normalize(at - from);
 	vec3 u = normalize(cross(n, up));
 	vec3 v = normalize(cross(u, n));
 	return mat3(u, v, n);
@@ -149,8 +154,11 @@ void main () {
 	// Aspect ratio
 	float aR = resolution.x / resolution.y;
 
+	// Rotate camera
+	meye = (mv * vec4(eye, 1)).xyz;
+
 	// Ray origin
-	vec3 ray_Origin = eye;//(mv * vec4(eye, 1)).xyz;//
+	vec3 ray_Origin = meye;
 
     // Orient the viewer
     mat3 orient = lookat(ray_Origin, at, up);
