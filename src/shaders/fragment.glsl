@@ -30,13 +30,13 @@ float sphere (vec3 point, vec3 center, float radius) {
 }
 
 // Torus distance estimator
-float square (vec3 point, vec3 center, float lwh) {
+float cube (vec3 point, vec3 center, float lwh) {
   return length(max(abs(point - center) - vec3(lwh), 0.0));
 }
 
 // Define the entire scene here
 float scene (vec3 point) {
-  return sphere(point, vec3(0,0,-1), 0.5);
+  return cube(point, vec3(0,0,-1), 0.25);
   		 
 }
 
@@ -145,8 +145,6 @@ void main () {
 	// Define
 	light = vec3(light_x, light_y, light_z);
 	up = vec3(0,1,0);
-	//right = vec3(1,0,0);
-	//forward = vec3(0,0,-1);
 
     // Look at point
 	vec3 at = vec3(mouse, -focal);
