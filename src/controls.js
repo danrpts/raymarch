@@ -31,9 +31,11 @@ module.exports = function (canvas, gl, program) {
 
       if (dragging) {
 
-        // Extract rotation matrix from coordinates
+        // Extract clip coordinates
         var coord = utils.clipCoords(e);
-        var mv = utils.trackball(coord, 0.5);
+
+        // Generate rotation matrix; Radius of trackball depends on focal length here
+        var mv = utils.trackball(coord, $("#focal").val());
 
         // Apply & render!
         gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mv'), gl.FALSE, new Float32Array(mv));
