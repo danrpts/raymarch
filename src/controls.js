@@ -33,8 +33,7 @@ module.exports = function (canvas, gl, program) {
 
         // Extract rotation matrix from coordinates
         var coord = utils.clipCoords(e);
-        console.log(coord);
-        var mv = utils.trackball(coord, 1);
+        var mv = utils.trackball(coord, 0.5);
 
         // Apply & render!
         gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mv'), gl.FALSE, new Float32Array(mv));

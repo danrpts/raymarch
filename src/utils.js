@@ -86,16 +86,24 @@ module.exports.trackball = (function () {
 
   return function (coord, r) {
 
-    // Check x-y is on trackball
-    var d = vec2.length.call(coord, coord);
-    if (d > r) {
-      // TODO: Project out of bounds xy coordinate
-      coord[2] = 0;
+    // Check if x-y is on trackball base-circle
+    var d = coord[0] * coord[0] + coord[1] * coord[1];
 
-    } else {
+    // Handle coord inside trackball base-circle
+    if (d < r * r) {
       
       // Solve for 'z' on virtual trackball of radius 'r'
       coord[2] = Math.sqrt(r * r - d);
+
+    // Otherwise project onto trackball base-circle edge
+    } else {
+
+      // Technique: treat coord as a normalized vector and multiply by radius
+      var s = r/d;
+      coord[0] *= s;
+      coord[1] *= s;
+      coord[2] = 0;
+
     }
 
     // End point
@@ -114,6 +122,7 @@ module.exports.trackball = (function () {
 
       // Set axis of rotation
       var N = vec3.create();
+      
        // BUG::INCONSISTENCY: should be vec3.cross(p0, p1) for ccw rotation but it is not
       vec3.cross(N, p1, p0);
 

@@ -95,6 +95,7 @@
 	    
 	    gl.useProgram(program);
 	    
+	    gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mv'), gl.FALSE, new Float32Array(mat4.create()));
 	    gl.uniform3fv(gl.getUniformLocation(program, 'eye'), new Float32Array(window.eye));
 	    gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array([0, 0]));
 	    gl.uniform2fv(gl.getUniformLocation(program, 'resolution'), new Float32Array([canvas.width, canvas.height]));
@@ -167,43 +168,118 @@
 	  }
 	}
 
-	module.exports.mouse2clip = function (e) {
+	module.exports.screenCoords = function (e) {
 	  var c = $('#canvas');
 	  var x = e.pageX - c.offset().left;
 	  var y = e.pageY - c.offset().top;
+	  var h = c.height();
+	  return [x, h-y]; // flip y axis
+	}
+
+	module.exports.normalizedScreenCoords = function (e) {
+	  var c = $('#canvas');
+	  var xy = module.exports.screenCoords(e);
+	  var x = xy[0];
+	  var y = xy[1];
 	  var w = c.width();
 	  var h = c.height();
-	  return coord = [2*x/w-1, 2*(h-y)/h-1];
+	  return [x/w, y/h]; // normalize
 	}
 
-	module.exports.rotate = function (x, y, z) {
-	  var r = Math.PI / 180.0;
-	  var c = Math.cos;
-	  var s = Math.sin;
-	  var xrad = x * r;
-	  var cx = c(xrad);
-	  var sx = s(xrad);
-	  var yrad = y * r;
-	  var cy = c(yrad);
-	  var sy = s(yrad);
-	  var zrad = z * r;
-	  var cz = c(zrad);
-	  var sz = s(zrad);
-	  return [
-	    cy*cz,           -cy*sz,          sy,     0,
-	    sx*sy*cz+cx*sz,  -sx*sy*sz+cx*cz, -sx*cy, 0,
-	    -cx*sy*cz+sx*sz, cx*sy*sz+sx*cz,  cx*cy,  0,
-	    0,               0,               0,      1    
-	  ]
+	module.exports.clipCoords = function (e) {
+	  var xy = module.exports.normalizedScreenCoords(e);
+	  var x = xy[0];
+	  var y = xy[1];
+	  return coord = [2*x-1, 2*y-1]; // clip 
 	}
 
-	// not tested
-	// map a value from one coordinate axis to another
-	// from[min, max]
-	// to[min, max]
-	module.exports.map2 = function (value, from, to) {
-	    return (to[1] - to[0]) / (from[1] - from[0]) * value;
+	module.exports.deg2rad = function (deg) {
+	  return deg*Math.PI/180;
 	}
+
+	module.exports.rad2deg = function (rad) {
+	  return rad*180/Math.PI;
+	}
+
+	// xy [] 2D coordinates
+	// r float radius
+	// TODO: need to fix texture mapping, i.e, when the object is rotated and we raymarch it
+	/// the value of the hit point is the same because it originated from the same location
+	//// and so the texture maps to the same location no matter what side of object we view
+	//// [1] One solution is to rotate the camera instead of the object, clean
+	//// [2] Somehow keep track of rotations and modify point, ugly
+	module.exports.trackball = (function () {
+
+	  // Maintain closure on this point
+	  var p0 = null;
+
+	  // Setup model-view matrix
+	  var mv = mat4.create();
+
+	  // Reset p0 on mouse up for smooth rotations
+	  $('#canvas').mouseup(function () {
+	    p0 = null;
+	  });
+
+	  return function (coord, r) {
+
+	    // Check x-y is on trackball
+	    var d = vec2.length.call(coord, coord);
+	    if (d > r) {
+
+	      // TODO: Project out of bounds xy coordinate
+	      coord[2] = 0;
+
+	    } else {
+	      
+	      // Solve for 'z' on virtual trackball of radius 'r'
+	      coord[2] = Math.sqrt(r * r - d);
+	    }
+
+	    // End point
+	    var p1 = vec3.fromValues.apply(coord, coord);
+
+	    if (p0 === null) {
+
+	      // Set intial point
+	      p0 = vec3.create();
+	      vec3.copy(p0, p1);
+
+	      // Returns identity matrix
+	      return mv;
+
+	    } else {
+
+	      // Set axis of rotation
+	      var N = vec3.create();
+	      
+	       // BUG::INCONSISTENCY: should be vec3.cross(p0, p1) for ccw rotation but it is not
+	      vec3.cross(N, p1, p0);
+
+	      // Approximate angle between p0 and p1
+	      theta = vec3.length(N) / (vec3.length(p0) * vec3.length(p1));
+
+	      // Normalize the axis of rotation
+	      vec3.normalize(N, N);
+	      
+	      // Move camera to object frame
+	      mat4.translate(mv, mv, [0,0,-1]);
+
+	      // Apply transformation
+	      mat4.rotate(mv, mv, theta, N);
+
+	      // Move camera from object frame
+	      mat4.translate(mv, mv, [0,0,1]);
+
+	      // Set new start point
+	      vec3.copy(p0, p1);
+
+	      // Returns matrix for moving camera
+	      return mv;
+	    }
+	  }
+
+	}());
 
 
 /***/ },
@@ -222,7 +298,7 @@
 /* 4 */
 /***/ function(module, exports) {
 
-	module.exports = "#define _PI_ 3.1415926535897932384626433832795\nprecision highp float;  \nvarying vec2 uv;\nuniform vec2 resolution;\nuniform vec2 mouse;\nuniform vec3 eye;\nuniform float phong_alpha;\nuniform float fineness;\nuniform float focal;\nuniform float light_x;\nuniform float light_y;\nuniform float light_z;\nuniform sampler2D mars;\nuniform mat3 rot;\nvec3 light;\nvec3 right;\nvec3 up;\nvec3 forward;\n\n// Surface threshold i.e. minimum distance to surface\nconst float ray_EPSILON = 0.001;\n\n// Max allowable steps along ray\nconst int ray_MAX_STEPS = 64;\t\t\n\n// Sphere distance estimator\nfloat sphere (vec3 point, vec3 center, float radius) {\n\treturn length(point - center) - radius;\n}\n\n// Define the entire scene here\nfloat scene (vec3 point) {\n\treturn min(sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0,0,5), 0.5));\n}\n\n// Get surface normal for a point\nvec3 normal (vec3 point) {\n\treturn vec3(scene(point+vec3(1,0,0)) - scene(point-vec3(1,0,0)),\n            \tscene(point+vec3(0,1,0)) - scene(point-vec3(0,1,0)),\n           \t \tscene(point+vec3(0,0,1)) - scene(point-vec3(0,0,1)));\n}\n\n// Get RGB phong shade for a point\nvec3 phongShade (vec3 point) {\n\n    // Get surface normal\n    vec3 N = normal(point);\n\t\n    // Get sphere mapped texture coordinate\n    vec4 texture = texture2D(mars, vec2(asin(N.x)/_PI_ + 0.5, asin(N.y)/_PI_ + 0.5));\n\n\t// Material Properties\n\tvec3 phong_ka = texture.xyz;\n\tvec3 phong_kd = texture.xyz;\n\tvec3 phong_ks = texture.xyz;\n\t\n\t// Light properties\n\tvec3 phong_Ia = vec3(0.3);\n\tvec3 phong_Id = vec3(0.7);\n\tvec3 phong_Is = vec3(1);\n\t\n\t// Get inicidient ray\n\tvec3 L = normalize(light - point);\n\t\n\t// Get viewer ray\n\tvec3 V = normalize(eye.xyz - point);\n\t\n\t// Get reflection ray; Blinn-Phong style\n\tvec3 H = normalize(V+L);\n\t\n\t// Ambient\n\treturn (phong_ka * phong_Ia)\n\t\n\t// Diffuse\n\t+ (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)\n\t\n\t// Specular\n\t+ ((dot(N, L) > 0.0) \n\t\t? (phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)\n\t\t: vec3(0))\n\t;\n\t\n}\n\n// March along a ray defined by an origin and direction\nvec4 rayMarch (vec3 rO, vec3 rD) {\n\n\t// Default/sky color\n\tvec4 shade = vec4(0, 0, 0, 1);\n\n\t// Marched distance\n\tfloat distance = 0.0;\n\n\t// Begin marching\n\tvec3 ray;\n\tfor (int i = 0; i < ray_MAX_STEPS; ++i) {\n\t\t\n\t\t// Formulate the ray\n\t\tray = rO + distance * rD;\n\n\t\t// Cast ray into scene\n\t\tfloat step = scene(ray);\n\t\t\n\t\t// If within the surface threshold\n\t\tif (step < ray_EPSILON / fineness) {\n\t\t\t\n\t\t\t// Apply Blinn-Phong shading or use `distance` to shade\n\t\t\tshade = vec4(phongShade(ray), 1);\n\t\t\tbreak;\n\t\t}\n\t\t\n\t\t// Increment safe distance\n\t\tdistance += step;\n\t}\n\n\t// Done!\n\treturn shade;\n}\n\nmat3 lookat (vec3 eye, vec3 at, vec3 up) {\n\tvec3 n = normalize(at - eye);\n\tvec3 u = normalize(cross(n, up));\n\tvec3 v = normalize(cross(u, n));\n\treturn mat3(u, v, n);\n}\n\nvoid main () {\n\n\t// Define\n\tlight = vec3(light_x, light_y, light_z);\n\tup = vec3(0,1,0);\n\t//right = vec3(1,0,0);\n\t//forward = vec3(0,0,-1);\n\n    // Look at point\n\tvec3 at = vec3(mouse, -focal);\n\n\t// Aspect ratio\n\tfloat aR = resolution.x / resolution.y;\n\n\t// Ray origin\n\tvec3 ray_Origin = eye;\n\n    // Orient the viewer\n    mat3 orient = lookat(ray_Origin, at, up);\n\t\n\t// Ray directon look around\n\tvec3 ray_Direction = orient * normalize(vec3(uv.x * aR, uv.y, focal));\n\n\t// Ray direction perspective\n    //vec3 ray_Direction = normalize((right * uv.x * aR) + (up * uv.y) + (forward * focal));\n\n\t// Ray origin orthographic\n\t//vec3 ray_Origin = (right * uv.x * aR) + (up * uv.y);\n\n\t// Ray directon orthographic\n\t//vec3 ray_Direction = forward;\n\n\t// March to implicit surface\n\tvec4 color = rayMarch(ray_Origin, ray_Direction);\n\t\n\t// Final color\n\tgl_FragColor = color;\n\t\n}"
+	module.exports = "#define _PI_ 3.1415926535897932384626433832795\nprecision highp float;  \nvarying vec2 uv;\nuniform vec2 resolution;\nuniform vec2 mouse;\nuniform vec3 eye;\nuniform float phong_alpha;\nuniform float fineness;\nuniform float focal;\nuniform float light_x;\nuniform float light_y;\nuniform float light_z;\nuniform sampler2D mars;\nuniform mat4 mv;\nvec3 light;\nvec3 right;\nvec3 up;\nvec3 forward;\n\n// Surface threshold i.e. minimum distance to surface\nconst float ray_EPSILON = 0.001;\n\n// Max allowable steps along ray\nconst int ray_MAX_STEPS = 64;\t\t\n\n// Sphere distance estimator\nfloat sphere (vec3 point, vec3 center, float radius) {\n\treturn length(point - center) - radius;\n}\n\n// Torus distance estimator\nfloat square (vec3 point, vec3 center, float lwh) {\n  return length(max(abs(point - center) - vec3(lwh), 0.0));\n}\n\n// Define the entire scene here\nfloat scene (vec3 point) {\n\t//vec3 dpoint = (mv * vec4(point, 1)).xyz;\n\treturn square(point, vec3(0,0,-1), 0.35); \n\t//min ( sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0.5,0.5,-1), 0.1) );//\n}\n\n// Get surface normal for a point\nvec3 normal (vec3 point) {\n\treturn vec3(scene(point+vec3(1,0,0)) - scene(point-vec3(1,0,0)),\n            \tscene(point+vec3(0,1,0)) - scene(point-vec3(0,1,0)),\n           \t \tscene(point+vec3(0,0,1)) - scene(point-vec3(0,0,1)));\n}\n\n// Get RGB phong shade for a point\nvec3 phongShade (vec3 point) {\n\n    // Get surface normal\n    vec3 N = normal(point);\n\n    // Get sphere mapped texture coordinate\n    vec4 texture = texture2D(mars, vec2(0.5 + asin(N.x)/_PI_, 0.5 + asin(N.y)/_PI_));\n\n\t// Material Properties\n\tvec3 phong_ka = texture.xyz;\n\tvec3 phong_kd = texture.xyz;\n\tvec3 phong_ks = texture.xyz;\n\t\n\t// Light properties\n\tvec3 phong_Ia = vec3(0.3);\n\tvec3 phong_Id = vec3(0.7);\n\tvec3 phong_Is = vec3(1);\n\t\n\t// Get inicidient ray\n\tvec3 L = normalize(light - point);\n\t\n\t// Get viewer ray\n\tvec3 V = normalize(eye.xyz - point);\n\t\n\t// Get reflection ray; Blinn-Phong style\n\tvec3 H = normalize(V+L);\n\t\n\t// Ambient\n\treturn (phong_ka * phong_Ia)\n\t\n\t// Diffuse\n\t+ (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)\n\t\n\t// Specular\n\t+ ((dot(N, L) > 0.0) \n\t\t? (phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)\n\t\t: vec3(0))\n\t;\n\t\n}\n\n// March along a ray defined by an origin and direction\nvec4 rayMarch (vec3 rO, vec3 rD) {\n\n\t// Default/sky color\n\tvec4 shade = vec4(0, 0, 0, 1);\n\n\t// Marched distance\n\tfloat distance = 0.0;\n\n\t// Begin marching\n\tvec3 ray;\n\tfor (int i = 0; i < ray_MAX_STEPS; ++i) {\n\t\t\n\t\t// Formulate the ray\n\t\tray = rO + distance * rD;\n\n\t\t// Cast ray into scene\n\t\tfloat step = scene(ray);\n\t\t\n\t\t// If within the surface threshold\n\t\tif (step < ray_EPSILON / fineness) {\n\t\t\t\n\t\t\t// Apply Blinn-Phong shading or use `distance` to shade\n\t\t\tshade = vec4(phongShade(ray), 1);\n\t\t\tbreak;\n\t\t}\n\t\t\n\t\t// Increment safe distance\n\t\tdistance += step;\n\t}\n\n\t// Done!\n\treturn shade;\n}\n\nmat3 lookat (vec3 eye, vec3 at, vec3 up) {\n\tvec3 n = normalize(at - eye);\n\tvec3 u = normalize(cross(n, up));\n\tvec3 v = normalize(cross(u, n));\n\treturn mat3(u, v, n);\n}\n\nvoid main () {\n\n\t// Define\n\tlight = vec3(light_x, light_y, light_z);\n\tup = vec3(0,1,0);\n\t//right = vec3(1,0,0);\n\t//forward = vec3(0,0,-1);\n\n    // Look at point\n\tvec3 at = vec3(mouse, -focal);\n\n\t// Aspect ratio\n\tfloat aR = resolution.x / resolution.y;\n\n\t// Ray origin\n\tvec3 ray_Origin = (mv * vec4(eye, 1)).xyz;//eye;\n\n    // Orient the viewer\n    mat3 orient = lookat(ray_Origin, at, up);\n\t\n\t// Ray directon look around\n\tvec3 ray_Direction = orient * normalize(vec3(uv.x * aR, uv.y, focal));\n\n\t// Ray direction perspective\n    //vec3 ray_Direction = normalize((right * uv.x * aR) + (up * uv.y) + (forward * focal));\n\n\t// Ray origin orthographic\n\t//vec3 ray_Origin = (right * uv.x * aR) + (up * uv.y);\n\n\t// Ray directon orthographic\n\t//vec3 ray_Direction = forward;\n\n\t// March to implicit surface\n\tvec4 color = rayMarch(ray_Origin, ray_Direction);\n\t\n\t// Final color\n\tgl_FragColor = color;\n\t\n}"
 
 /***/ },
 /* 5 */
@@ -236,39 +312,50 @@
 	  // temporary
 	  window.update = function (id, value) {
 	    gl.uniform1f(gl.getUniformLocation(program, id), value);
-	    render(canvas, gl);
+	    utils.render(canvas, gl);
 	  }
 
 	  // ctrl + mousemove = look around
 	  $('#canvas').mousemove(function (e) {
 	    if (e.ctrlKey) {
-	      var coord = utils.mouse2clip(e);
+	      var coord = utils.clipCoords(e);
 	      gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(coord));
 	      utils.render(canvas, gl);
 	    }
 	  });
 
+	  // drag about implicit axis
+	  // needs work
 	  $('#canvas').mousedown(function (e) {
+	    var dragging = true, delta = 0;
+
+	    $('#canvas').mouseout(function (e) {
+	      dragging = false;
+	    });
+
+	    $('#canvas').mousemove(function (e) {
+
+	      if (dragging) {
+
+	        // Extract rotation matrix from coordinates
+	        var coord = utils.clipCoords(e);
+	        console.log(coord);
+	        var mv = utils.trackball(coord, 1);
+
+	        // Apply & render!
+	        gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mv'), gl.FALSE, new Float32Array(mv));
+	        utils.render(canvas, gl);
+
+	      }
+
+	    });
+
+	    // Stop calculating motion
+	    $('#canvas').mouseup(function (e) {
+	      dragging = false;
+	    });
 
 	  });
-
-	  $('#canvas').keydown(function (e) {
-	    switch (e.which) {
-	      case 87: w(); break;
-	      case 65: a(); break;
-	      case 83: s(); break;
-	      case 68: d(); break;
-	      default: break;
-	    }
-	  });
-
-	  function w() {} 
-
-	  function a() {} 
-
-	  function s() {} 
-
-	  function d() {}
 
 	}
 
