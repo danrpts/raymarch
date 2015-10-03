@@ -98,7 +98,7 @@ module.exports.trackball = (function () {
     // Otherwise project onto trackball base-circle edge
     } else {
 
-      // Technique: treat coord as a normalized vector and multiply by radius
+      // Technique: normalize coord like a direction vector and multiply by radius
       var s = r/d;
       coord[0] *= s;
       coord[1] *= s;
