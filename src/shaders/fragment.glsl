@@ -25,7 +25,7 @@ const int ray_MAX_STEPS = 64;
 
 // Sphere distance estimator
 float sphere (vec3 point, vec3 center, float radius) {
-	return length(point - center) - radius;
+  return length(point - center) - radius;
 }
 
 // Torus distance estimator
@@ -35,58 +35,62 @@ float square (vec3 point, vec3 center, float lwh) {
 
 // Define the entire scene here
 float scene (vec3 point) {
-	//vec3 dpoint = (mv * vec4(point, 1)).xyz;
-	return square(point, vec3(0,0,-1), 0.35); 
-	//min ( sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0.5,0.5,-1), 0.1) );//
+  vec3 dpoint = (mv * vec4(point, 1)).xyz;
+  return square(dpoint, vec3(0,0,-1), 0.35); 
+  //min ( sphere(point, vec3(0,0,-1), 0.5), sphere(point, vec3(0.5,0.5,-1), 0.1) );//
 }
 
 // Get surface normal for a point
 vec3 normal (vec3 point) {
-	return vec3(scene(point+vec3(1,0,0)) - scene(point-vec3(1,0,0)),
-            	scene(point+vec3(0,1,0)) - scene(point-vec3(0,1,0)),
-           	 	scene(point+vec3(0,0,1)) - scene(point-vec3(0,0,1)));
+  vec3 x = vec3(1,0,0);
+  vec3 y = vec3(0,1,0);
+  vec3 z = vec3(0,0,1);
+  return normalize(vec3(
+    scene(point+x) - scene(point-x),
+    scene(point+y) - scene(point-y),
+    scene(point+z) - scene(point-z)));
 }
 
 // Get RGB phong shade for a point
 vec3 phongShade (vec3 point) {
 
-    // Get surface normal
-    vec3 N = normal(point);
+  // Get surface normal
+  vec3 N = normal(point);
 
-    // Get sphere mapped texture coordinate
-    vec4 texture = texture2D(mars, vec2(0.5 + asin(N.x)/_PI_, 0.5 + asin(N.y)/_PI_));
+  // Get sphere mapped texture coordinate
+  vec4 texture = texture2D(mars, vec2(0.5 + asin(N.x)/_PI_, 0.5 + asin(N.y)/_PI_));
 
-	// Material Properties
-	vec3 phong_ka = texture.xyz;
-	vec3 phong_kd = texture.xyz;
-	vec3 phong_ks = texture.xyz;
-	
-	// Light properties
-	vec3 phong_Ia = vec3(0.3);
-	vec3 phong_Id = vec3(0.7);
-	vec3 phong_Is = vec3(1);
-	
-	// Get inicidient ray
-	vec3 L = normalize(light - point);
-	
-	// Get viewer ray
-	vec3 V = normalize(eye.xyz - point);
-	
-	// Get reflection ray; Blinn-Phong style
-	vec3 H = normalize(V+L);
-	
-	// Ambient
-	return (phong_ka * phong_Ia)
-	
-	// Diffuse
-	+ (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)
-	
-	// Specular
-	+ ((dot(N, L) > 0.0) 
-		? (phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)
-		: vec3(0))
-	;
-	
+  // Material Properties
+  vec3 phong_ka = texture.xyz;
+  vec3 phong_kd = texture.xyz;
+  vec3 phong_ks = texture.xyz;
+  
+  // Light properties
+  vec3 phong_Ia = vec3(0.3);
+  vec3 phong_Id = vec3(0.7);
+  vec3 phong_Is = vec3(1);
+  
+  // Get inicidient ray
+  vec3 L = normalize(light - point);
+  
+  // Get viewer ray
+  vec3 V = normalize(eye.xyz - point);
+  
+  // Get reflection ray; Blinn-Phong style
+  vec3 H = normalize(V+L);
+  
+  // Ambient
+  return (phong_ka * phong_Ia)
+  
+  // Diffuse
+  + (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)
+  
+  // Specular
+  + ((dot(N, L) > 0.0) 
+  	? (phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)
+  	: vec3(0))
+  ;
+  
 }
 
 // March along a ray defined by an origin and direction
@@ -146,7 +150,7 @@ void main () {
 	float aR = resolution.x / resolution.y;
 
 	// Ray origin
-	vec3 ray_Origin = (mv * vec4(eye, 1)).xyz;//eye;
+	vec3 ray_Origin = eye;//(mv * vec4(eye, 1)).xyz;//
 
     // Orient the viewer
     mat3 orient = lookat(ray_Origin, at, up);
