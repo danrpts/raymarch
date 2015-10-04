@@ -16,4 +16,4 @@ A lightweight WebGl raymarching engine for experimental and educational uses
 The application is now hosted at http://localhost:8080
 
 ## Controls
-Look around: `ctrl` + `mousemove`
+Rotate viewer: `click` + `drag`
