@@ -11,7 +11,7 @@ $(function () {
     canvas.width = $('.page-content').width();
     canvas.height = window.innerHeight;
 
-    window.eye = [0,0,0];
+    window.eye = [0,0,1];
 
     var vertShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertShader, require('./shaders/vertex.glsl'));
@@ -51,7 +51,7 @@ $(function () {
     
     gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mv'), gl.FALSE, new Float32Array(mat4.create()));
     gl.uniform3fv(gl.getUniformLocation(program, 'eye'), new Float32Array(window.eye));
-    gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array([0, 0]));
+    gl.uniform3fv(gl.getUniformLocation(program, 'mouse'), new Float32Array([0, 0, 0]));
     gl.uniform2fv(gl.getUniformLocation(program, 'resolution'), new Float32Array([canvas.width, canvas.height]));
     gl.uniform1f(gl.getUniformLocation(program, 'fineness'), $('#fineness').val());
     gl.uniform1f(gl.getUniformLocation(program, 'phong_alpha'), $('#phong_alpha').val());

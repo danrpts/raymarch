@@ -2,7 +2,7 @@
 precision highp float;  
 varying vec2 uv;
 uniform vec2 resolution;
-uniform vec2 mouse;
+uniform vec3 mouse;
 uniform vec3 eye;
 uniform float phong_alpha;
 uniform float fineness;
@@ -13,10 +13,6 @@ uniform float light_z;
 uniform sampler2D image;
 uniform mat4 mv;
 vec3 light;
-vec3 right;
-vec3 up;
-vec3 forward;
-vec3 meye;
 
 // Surface threshold i.e. minimum distance to surface
 float ray_EPSILON = 0.01 / fineness;
@@ -36,8 +32,7 @@ float cube (vec3 point, vec3 center, float lwh) {
 
 // Define the entire scene here
 float scene (vec3 point) {
-  return cube(point, vec3(0,0,-1), 0.25);
-  		 
+  return cube(point, vec3(0,0,0), 0.25);
 }
 
 // Get surface normal for a point
@@ -75,7 +70,7 @@ vec3 phongShade (vec3 point) {
   vec3 L = normalize(light - point);
   
   // Get viewer ray
-  vec3 V = normalize(meye - point);
+  vec3 V = normalize((mv * vec4(eye, 1)).xyz - point);
   
   // Get reflection ray; Blinn-Phong style
   vec3 H = normalize(L + V);
@@ -99,10 +94,10 @@ vec3 phongShade (vec3 point) {
 }
 
 // March along a ray defined by an origin and direction
-vec4 rayMarch (vec3 pO, vec3 rD) {
+vec3 rayMarch (vec3 pO, vec3 rD) {
 
 	// Default/sky color
-	vec4 shade = vec4(0.1, 0.1, 0.3, 1);
+	vec3 shade = vec3(0.1, 0.1, 0.3);
 
 	// Marched distance
 	float distance = 0.0;
@@ -121,7 +116,7 @@ vec4 rayMarch (vec3 pO, vec3 rD) {
 		if (step < ray_EPSILON) {
 			
 			// Apply Blinn-Phong shading
-			shade = vec4(phongShade(p1), 1);
+			shade = vec3(phongShade(p1));
 			break;
 		}
 		
@@ -133,50 +128,41 @@ vec4 rayMarch (vec3 pO, vec3 rD) {
 	return shade;
 }
 
-mat3 lookat (vec3 from, vec3 at, vec3 up) {
-	vec3 n = normalize(at - from);
-	vec3 u = normalize(cross(n, up));
-	vec3 v = normalize(cross(u, n));
-	return mat3(u, v, n);
+mat4 lookAtRH (vec3 from, vec3 at, vec3 up) {
+	vec3 z = normalize(from - at);
+	vec3 x = normalize(cross(up, z));
+	vec3 y = normalize(cross(z, x));
+	vec3 o = -from;
+	return mat4(vec4(x, 0),
+				vec4(y, 0),
+				vec4(z, 0),
+				vec4(o, 1));
 }
 
 void main () {
 
-	// Define
+	// Define point light
 	light = vec3(light_x, light_y, light_z);
-	up = vec3(0,1,0);
-
-    // Look at point
-	vec3 at = vec3(mouse, -focal);
 
 	// Aspect ratio
 	float aR = resolution.x / resolution.y;
 
-	// Rotate camera
-	meye = (mv * vec4(eye, 1)).xyz;
+	// Homogenous ray origin
+	vec4 ray_Origin = mv * vec4(eye, 1);
 
-	// Ray origin
-	vec3 ray_Origin = meye;
+	// Homogenous look at point
+	vec4 at = vec4(mouse, 1);
 
-    // Orient the viewer
-    mat3 orient = lookat(ray_Origin, at, up);
-	
-	// Ray directon look around
-	vec3 ray_Direction = orient * normalize(vec3(uv.x * aR, uv.y, focal));
+    // Orient the
+    mat4 orient = lookAtRH(ray_Origin.xyz, at.xyz, vec3(0, 1, 0));
 
-	// Ray direction perspective
-    //vec3 ray_Direction = normalize((right * uv.x * aR) + (up * uv.y) + (forward * focal));
-
-	// Ray origin orthographic
-	//vec3 ray_Origin = (right * uv.x * aR) + (up * uv.y);
-
-	// Ray directon orthographic
-	//vec3 ray_Direction = forward;
+	// Ray direction normal
+    vec4 ray_Direction = normalize(orient * vec4(uv.x * aR, uv.y, -focal, 0));
 
 	// March to implicit surface
-	vec4 color = rayMarch(ray_Origin, ray_Direction);
+	vec3 color = rayMarch(ray_Origin.xyz, ray_Direction.xyz);
 	
 	// Final color
-	gl_FragColor = color;
+	gl_FragColor = vec4(color, 1);
 	
 }

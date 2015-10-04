@@ -13,7 +13,8 @@ module.exports = function (canvas, gl, program) {
   $('#canvas').mousemove(function (e) {
     if (e.ctrlKey) {
       var coord = utils.clipCoords(e);
-      gl.uniform2fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(coord));
+      coord.push(0);
+      gl.uniform3fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(coord));
       utils.render(canvas, gl);
     }
   });
