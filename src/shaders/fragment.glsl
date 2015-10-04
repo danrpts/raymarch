@@ -12,37 +12,37 @@ uniform float light_z;
 uniform sampler2D image;
 uniform mat4 rotate_viewer;
 uniform mat4 rotate_scene;
+vec3 origin;
 vec3 light;
 vec3 eye;
 
 // Surface threshold i.e. minimum distance to surface
-float ray_EPSILON = 0.01 / fineness;
+float ray_EPSILON = 0.001 / fineness;
 
 // Max allowable steps along ray
 const int ray_MAX_STEPS = 64;
 
 // Sphere distance estimator
-float sphere (vec3 point, vec3 center, float radius) {
-  return length(point - center) - radius;
+float sphere (vec3 point, vec3 position, float radius) {
+  return length(point - position) - radius;
 }
 
 // Torus distance estimator
-float cube (vec3 point, vec3 center, float lwh) {
-  return length(max(abs(point - center) - vec3(lwh), 0.0));
+float cube (vec3 point, vec3 position, float lwh) {
+  return length(max(abs(point - position) - vec3(lwh), 0.0));
 }
 
 // Define the entire scene here
 float scene (vec3 point) {
-  return min(
-  		cube(point, vec3(0,0,0), 0.25),
-  		sphere(point, light, 0.1));
+  return min(sphere(point, origin, 0.5),
+			 sphere(point, light, 0.1));
 }
 
 // Get surface normal for a point
 vec3 normal (vec3 point) {
-  vec3 x = vec3(ray_EPSILON,0,0);
-  vec3 y = vec3(0,ray_EPSILON,0);
-  vec3 z = vec3(0,0,ray_EPSILON);
+  vec3 x = vec3(ray_EPSILON, 0, 0);
+  vec3 y = vec3(0, ray_EPSILON, 0);
+  vec3 z = vec3(0, 0, ray_EPSILON);
   return normalize(vec3(
     scene(point+x) - scene(point-x),
     scene(point+y) - scene(point-y),
@@ -55,13 +55,20 @@ vec3 phongShade (vec3 point) {
   // Get surface normal
   vec3 N = normal(point);
 
+  float theta = atan(point.x, point.z) + _PI_; // theta E [0, 2PI)
+  float u = theta /  (2.0 * _PI_);
+  float phi = acos(point.y / 0.5); // phi E [0, PI]
+  float v = phi / _PI_;
+
+  vec2 texel = vec2(u, v);
+
   // Material Properties
-  vec3 phong_ka = vec3(0);
-  vec3 phong_kd = vec3(0.7);
-  vec3 phong_ks = vec3(1);
+  vec3 phong_ka = texture2D(image, texel).rgb;//vec(0);
+  vec3 phong_kd = texture2D(image, texel).rgb;//vec3(0.7);
+  vec3 phong_ks = texture2D(image, texel).rgb;//vec3(1);
   
   // Light properties
-  vec3 phong_Ia = vec3(0);
+  vec3 phong_Ia = vec3(0.3);
   vec3 phong_Id = vec3(0.7);
   vec3 phong_Is = vec3(1);
   
@@ -112,12 +119,12 @@ vec3 rayMarch (vec3 pO, vec3 rD) {
 		
 		// If within the minimum surface threshold
 		if (step < ray_EPSILON) {
-			
+
 			// Apply Blinn-Phong shading
 			shade = vec3(phongShade(p1));
 			break;
 		}
-		
+
 		// Increment safe distance
 		distance += step;
 	}
@@ -139,16 +146,19 @@ mat3 lookAtLH (vec3 eye, vec3 at, vec3 up) {
 	vec3 x = normalize(cross(up, z));
 	vec3 y = normalize(cross(z, x));
 	vec3 o = -eye;
-	return mat3(-x,y,-z);
+	return mat3(z,y,x);
 }
 
 void main () {
+
+	// Define origin
+	origin = vec3(0, 0, 0);
 
 	// Define point light position
 	light = vec3(light_x, light_y, light_z);
 
 	// Define eye position
-	eye = (rotate_viewer * vec4(0,0,1,1)).xyz;
+	eye = (rotate_viewer * vec4(0, 0, 1 ,1)).xyz;
 
 	// Aspect ratio
 	float aR = resolution.x / resolution.y;
