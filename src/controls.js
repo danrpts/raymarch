@@ -10,19 +10,19 @@ module.exports = function (canvas, gl, program) {
   }
 
   // ctrl + mousemove = look around
-  $('#canvas').mousemove(function (e) {
-    if (e.ctrlKey) {
-      var coord = utils.clipCoords(e);
-      coord.push(0);
-      gl.uniform3fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(coord));
-      utils.render(canvas, gl);
-    }
-  });
+  //$('#canvas').mousemove(function (e) {
+  //  if (e.ctrlKey) {
+  //    var coord = utils.clipCoords(e);
+  //    coord.push(0);
+  //    gl.uniform3fv(gl.getUniformLocation(program, 'mouse'), new Float32Array(coord));
+  //    utils.render(canvas, gl);
+  //  }
+  //});
 
   // drag about implicit axis
   // needs work
   $('#canvas').mousedown(function (e) {
-    var dragging = true, delta = 0;
+    var dragging = true;
 
     $('#canvas').mouseout(function (e) {
       dragging = false;
@@ -36,10 +36,10 @@ module.exports = function (canvas, gl, program) {
         var coord = utils.clipCoords(e);
 
         // Generate rotation matrix; Radius of trackball depends on focal length here
-        var mv = utils.trackball(coord, $("#focal").val());
+        var m = utils.trackball(coord, $("#focal").val());
 
         // Apply & render!
-        gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mv'), gl.FALSE, new Float32Array(mv));
+        gl.uniformMatrix4fv(gl.getUniformLocation(program, 'rotate_viewer'), gl.FALSE, new Float32Array(m));
         utils.render(canvas, gl);
 
       }
@@ -52,5 +52,6 @@ module.exports = function (canvas, gl, program) {
     });
 
   });
+
 
 }

@@ -10,7 +10,8 @@ uniform float light_x;
 uniform float light_y;
 uniform float light_z;
 uniform sampler2D image;
-uniform mat4 mv;
+uniform mat4 rotate_viewer;
+uniform mat4 rotate_scene;
 vec3 light;
 vec3 eye;
 
@@ -32,7 +33,9 @@ float cube (vec3 point, vec3 center, float lwh) {
 
 // Define the entire scene here
 float scene (vec3 point) {
-  return cube(point, vec3(0,0,0), 0.25);
+  return min(
+  		cube(point, vec3(0,0,0), 0.25),
+  		sphere(point, light, 0.1));
 }
 
 // Get surface normal for a point
@@ -52,10 +55,6 @@ vec3 phongShade (vec3 point) {
   // Get surface normal
   vec3 N = normal(point);
 
-  // Get sphere mapped texture coordinate
-  //vec2 texels = vec2(asin(N.x), asin(N.y)) / _PI_ + 0.5;
-  //vec4 texture = texture2D(image, texels);
-
   // Material Properties
   vec3 phong_ka = vec3(0);
   vec3 phong_kd = vec3(0.7);
@@ -74,7 +73,6 @@ vec3 phongShade (vec3 point) {
   
   // Get reflection ray; Blinn-Phong style
   vec3 H = normalize(L + V);
-  
   
   // Sum and return final value
   return 
@@ -136,47 +134,27 @@ mat3 lookAtRH (vec3 eye, vec3 at, vec3 up) {
 	return mat3(x,y,z);
 }
 
-mat4 lookAtLH (vec3 eye, vec3 at, vec3 up) {
+mat3 lookAtLH (vec3 eye, vec3 at, vec3 up) {
 	vec3 z = normalize(eye - at);
 	vec3 x = normalize(cross(up, z));
 	vec3 y = normalize(cross(z, x));
 	vec3 o = -eye;
-	return mat4(vec4(-x, 0),
-				vec4(y, 0),
-				vec4(z, 0),
-				vec4(o, 1));
-}
-
-mat3 transpose(mat3 m) {
-	highp vec3 c0 = m[0];
-	highp vec3 c1 = m[1];
-	highp vec3 c2 = m[2];
-	return mat3(
-		vec3(c0.x, c1.x, c2.x),
-		vec3(c0.y, c1.y, c2.y),
-		vec3(c0.z, c1.z, c2.z)
-	);
+	return mat3(-x,y,-z);
 }
 
 void main () {
 
-	// Define point light
+	// Define point light position
 	light = vec3(light_x, light_y, light_z);
 
 	// Define eye position
-	eye = (mv * vec4(0,0,1,1)).xyz;
+	eye = (rotate_viewer * vec4(0,0,1,1)).xyz;
 
 	// Aspect ratio
 	float aR = resolution.x / resolution.y;
 
-	// Homogenous look at point
-	vec3 at = vec3(mouse[0], mouse[1], 0);
-
-    // Orient
-    mat3 orient = lookAtRH(eye, at, vec3(0, 1, 0));
-
 	// Ray direction normal
-    vec3 direction = orient * normalize(vec3(uv.x * aR, uv.y, -focal));
+    vec3 direction = (rotate_viewer * vec4(normalize(vec3(uv.x * aR, uv.y, -focal)),1)).xyz;
 
 	// March to implicit surface
 	vec3 color = rayMarch(eye, direction);

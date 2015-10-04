@@ -47,7 +47,8 @@ $(function () {
     
     gl.useProgram(program);
     
-    gl.uniformMatrix4fv(gl.getUniformLocation(program, 'mv'), gl.FALSE, new Float32Array(mat4.create()));
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, 'rotate_viewer'), gl.FALSE, new Float32Array(mat4.create()));
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, 'rotate_scene'), gl.FALSE, new Float32Array(mat4.create()));
     gl.uniform3fv(gl.getUniformLocation(program, 'mouse'), new Float32Array([0, 0, 0]));
     gl.uniform2fv(gl.getUniformLocation(program, 'resolution'), new Float32Array([canvas.width, canvas.height]));
     gl.uniform1f(gl.getUniformLocation(program, 'fineness'), $('#fineness').val());
