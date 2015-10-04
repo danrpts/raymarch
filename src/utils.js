@@ -131,15 +131,9 @@ module.exports.trackball = (function () {
 
       // Normalize the axis of rotation
       vec3.normalize(N, N);
-      
-      // Move camera to object frame
-      //mat4.translate(mv, mv, [0,0,1]);
 
       // Apply transformation
       mat4.rotate(mv, mv, theta, N);
-
-      // Move camera from object frame
-      //mat4.translate(mv, mv, [0,0,-1]);
 
       // Set new start point
       vec3.copy(p0, p1);

@@ -3,7 +3,6 @@ precision highp float;
 varying vec2 uv;
 uniform vec2 resolution;
 uniform vec3 mouse;
-uniform vec3 eye;
 uniform float phong_alpha;
 uniform float fineness;
 uniform float focal;
@@ -13,6 +12,7 @@ uniform float light_z;
 uniform sampler2D image;
 uniform mat4 mv;
 vec3 light;
+vec3 eye;
 
 // Surface threshold i.e. minimum distance to surface
 float ray_EPSILON = 0.01 / fineness;
@@ -70,7 +70,7 @@ vec3 phongShade (vec3 point) {
   vec3 L = normalize(light - point);
   
   // Get viewer ray
-  vec3 V = normalize((mv * vec4(eye, 1)).xyz - point);
+  vec3 V = normalize(eye - point);
   
   // Get reflection ray; Blinn-Phong style
   vec3 H = normalize(L + V);
@@ -128,15 +128,34 @@ vec3 rayMarch (vec3 pO, vec3 rD) {
 	return shade;
 }
 
-mat4 lookAtRH (vec3 from, vec3 at, vec3 up) {
-	vec3 z = normalize(from - at);
+mat3 lookAtRH (vec3 eye, vec3 at, vec3 up) {
+	vec3 z = normalize(eye - at);
 	vec3 x = normalize(cross(up, z));
 	vec3 y = normalize(cross(z, x));
-	vec3 o = -from;
-	return mat4(vec4(x, 0),
+	vec3 o = -eye;
+	return mat3(x,y,z);
+}
+
+mat4 lookAtLH (vec3 eye, vec3 at, vec3 up) {
+	vec3 z = normalize(eye - at);
+	vec3 x = normalize(cross(up, z));
+	vec3 y = normalize(cross(z, x));
+	vec3 o = -eye;
+	return mat4(vec4(-x, 0),
 				vec4(y, 0),
 				vec4(z, 0),
 				vec4(o, 1));
+}
+
+mat3 transpose(mat3 m) {
+	highp vec3 c0 = m[0];
+	highp vec3 c1 = m[1];
+	highp vec3 c2 = m[2];
+	return mat3(
+		vec3(c0.x, c1.x, c2.x),
+		vec3(c0.y, c1.y, c2.y),
+		vec3(c0.z, c1.z, c2.z)
+	);
 }
 
 void main () {
@@ -144,23 +163,23 @@ void main () {
 	// Define point light
 	light = vec3(light_x, light_y, light_z);
 
+	// Define eye position
+	eye = (mv * vec4(0,0,1,1)).xyz;
+
 	// Aspect ratio
 	float aR = resolution.x / resolution.y;
 
-	// Homogenous ray origin
-	vec4 ray_Origin = mv * vec4(eye, 1);
-
 	// Homogenous look at point
-	vec4 at = vec4(mouse, 1);
+	vec3 at = vec3(mouse[0], mouse[1], 0);
 
-    // Orient the
-    mat4 orient = lookAtRH(ray_Origin.xyz, at.xyz, vec3(0, 1, 0));
+    // Orient
+    mat3 orient = lookAtRH(eye, at, vec3(0, 1, 0));
 
 	// Ray direction normal
-    vec4 ray_Direction = normalize(orient * vec4(uv.x * aR, uv.y, -focal, 0));
+    vec3 direction = orient * normalize(vec3(uv.x * aR, uv.y, -focal));
 
 	// March to implicit surface
-	vec3 color = rayMarch(ray_Origin.xyz, ray_Direction.xyz);
+	vec3 color = rayMarch(eye, direction);
 	
 	// Final color
 	gl_FragColor = vec4(color, 1);
