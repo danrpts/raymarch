@@ -9,7 +9,7 @@ module.exports = function (canvas, gl, program) {
     utils.render(canvas, gl);
   }
 
-  // ctrl + mousemove = look around
+  // mousemove
   //$('#canvas').mousemove(function (e) {
   //  if (e.ctrlKey) {
   //    var coord = utils.clipCoords(e);
@@ -19,8 +19,7 @@ module.exports = function (canvas, gl, program) {
   //  }
   //});
 
-  // drag about implicit axis
-  // needs work
+  // mousedown + mousemove = rotate viewer
   $('#canvas').mousedown(function (e) {
     var dragging = true;
 
@@ -41,17 +40,12 @@ module.exports = function (canvas, gl, program) {
         // Apply & render!
         gl.uniformMatrix4fv(gl.getUniformLocation(program, 'rotate_viewer'), gl.FALSE, new Float32Array(m));
         utils.render(canvas, gl);
-
       }
-
     });
 
     // Stop calculating motion
     $('#canvas').mouseup(function (e) {
       dragging = false;
     });
-
   });
-
-
 }

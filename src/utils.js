@@ -76,7 +76,7 @@ module.exports.trackball = (function () {
   // Maintain closure on this point
   var p0 = null;
 
-  // Setup matrix
+  // Maintain closure on this matrix
   var m = mat4.create();
 
   // Reset p0 on mouse up for smooth rotations
@@ -134,80 +134,6 @@ module.exports.trackball = (function () {
 
       // Apply transformation; flip theta for CW rotation to follow cursor
       mat4.rotate(m, m, -theta, N);
-
-      // Set new start point
-      vec3.copy(p0, p1);
-
-      // Returns matrix for moving camera
-      return m;
-    }
-  }
-
-}());
-
-module.exports.sceneTrackball = (function () {
-
-  // Maintain closure on this point
-  var p0 = null;
-
-  // Setup matrix
-  var m = mat4.create();
-
-  // Reset p0 on mouse up for smooth rotations
-  $('#canvas').mouseup(function () {
-    p0 = null;
-  });
-
-  return function (coord, r) {
-
-    // Check if x-y is on trackball base-circle
-    var d = coord[0] * coord[0] + coord[1] * coord[1];
-
-    // Handle coord inside trackball base-circle
-    if (d < r * r) {
-      
-      // Solve for 'z' on virtual trackball of radius 'r'
-      coord[2] = Math.sqrt(r * r - d);
-
-    // Otherwise project onto trackball base-circle edge
-    } else {
-
-      // Technique: normalize coord like a direction vector and multiply by radius
-      var s = r/d;
-      coord[0] *= s;
-      coord[1] *= s;
-      coord[2] = 0;
-
-    }
-
-    // End point
-    var p1 = vec3.fromValues.apply(coord, coord);
-
-    if (p0 === null) {
-
-      // Set intial point
-      p0 = vec3.create();
-      vec3.copy(p0, p1);
-
-      // Returns identity matrix
-      return m;
-
-    } else {
-
-      // Set axis of rotation
-      var N = vec3.create();
-      
-       // BUG::INCONSISTENCY: should be vec3.cross(p0, p1) for ccw rotation but it is not
-      vec3.cross(N, p0, p1);
-
-      // Approximate angle between p0 and p1
-      theta = vec3.length(N) / (vec3.length(p0) * vec3.length(p1));
-
-      // Normalize the axis of rotation
-      vec3.normalize(N, N);
-
-      // Apply transformation
-      mat4.rotate(m, m, theta, N);
 
       // Set new start point
       vec3.copy(p0, p1);
