@@ -1,6 +1,8 @@
 # Raymarch
 A lightweight WebGl raymarching engine for experimental and educational uses
 
+![Earth](https://raw.github.com/danrpts/raymarch/master/public/demo.png)
+
 ## Install
 	
 	git clone https://github.com/danrpts/raymarch.git
