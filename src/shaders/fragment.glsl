@@ -11,6 +11,7 @@ uniform float light_y;
 uniform float light_z;
 uniform sampler2D earth_texture;
 uniform sampler2D moon_texture;
+uniform sampler2D mars_texture;
 uniform mat4 rotate_viewer;
 uniform mat4 rotate_scene;
 vec3 origin;
@@ -26,43 +27,6 @@ const int ray_MAX_STEPS = 64;
 // Sphere distance estimator
 float sphere (vec3 point, vec3 center, float radius) {
   return length(point - center) - radius;
-}
-
-// Get RGB phong shade for a point
-vec3 phong (vec3 point, vec3 normal, vec3 material) {
-
-  // Material Properties
-  vec3 phong_ka = vec3(0);
-  vec3 phong_kd = material;
-  vec3 phong_ks = material;
-  
-  // Light properties
-  vec3 phong_Ia = vec3(0);
-  vec3 phong_Id = vec3(0.7);
-  vec3 phong_Is = vec3(1);
-  
-  // Get inicidient ray
-  vec3 L = normalize(light - point);
-  
-  // Get viewer ray
-  vec3 V = normalize(eye - point);
-  
-  // Get reflection ray; Blinn-Phong style
-  vec3 H = normalize(L + V);
-  
-  // Sum and return final value
-  return 
-
-  // Ambient
-  (phong_ka * phong_Ia)
-  
-  // Diffuse
-  + (phong_kd * clamp(dot(normal, L), 0.0, 1.0) * phong_Id)
-  
-  // Specular
-  + (phong_ks * pow(dot(normal, H), 4.0 * phong_alpha) * phong_Is)
-  ;
-  
 }
 
 vec3 earth (vec3 point) {
@@ -97,13 +61,32 @@ vec3 moon (vec3 point) {
 	return vec3(dist, material, radius);
 }
 
+vec3 mars (vec3 point) {
+
+	// Radius of Mars
+	float radius = 0.45;
+
+	vec3 center = vec3(light.x, -light.yz);
+
+	// Distance to moon
+	float dist = sphere(point, center, radius);
+
+	// Matieral ID for Mars texture
+	float material = 2.0;
+
+	return vec3(dist, material, radius);
+}
+
+// check which object is closer
 vec3 join (vec3 thing, vec3 other) {
 	return (thing.x < other.x) ? thing : other;
 }
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return join(earth(point), moon(point));
+  return join(earth(point),
+  		 join(moon(point),
+  		 	  mars(point)));
 }
 
 vec3 normal (vec3 point) {
@@ -116,16 +99,56 @@ vec3 normal (vec3 point) {
     scene(point+z).x - scene(point-z).x));
 }
 
-vec3 color (vec3 point, float material, float radius) {
+// Get RGB Phong
+vec3 phongify (vec3 point, vec3 normal, vec3 material) {
+
+  // Material Properties
+  vec3 phong_ka = material;
+  vec3 phong_kd = material;
+  vec3 phong_ks = material;
+  
+  // Light properties
+  vec3 phong_Ia = vec3(0);
+  vec3 phong_Id = vec3(0.7);
+  vec3 phong_Is = vec3(1);
+  
+  // Get inicidient ray
+  vec3 L = normalize(light - point);
+  
+  // Get viewer ray
+  vec3 V = normalize(eye - point);
+  
+  // Get reflection ray; Blinn-Phong style
+  vec3 H = normalize(L + V);
+  
+  // Sum and return final value
+  return 
+
+  // Ambient
+  (phong_ka * phong_Ia)
+  
+  // Diffuse
+  + (phong_kd * clamp(dot(normal, L), 0.0, 1.0) * phong_Id)
+  
+  // Specular
+  + (phong_ks * pow(dot(normal, H), 4.0 * phong_alpha) * phong_Is)
+  ;
+  
+}
+
+vec3 materialize (vec3 point, float material, float radius) {
 
 	vec3 normal = normal(point);
+
+	// Need to remove depedence on radius
 	vec3 d = radius * normal;
 	float theta = atan(d.x, d.z) + _PI_; // theta E [0, 2PI)
 	float phi = acos(d.y / radius); // phi E [0, PI]
 	vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
 
-	if (material == 0.0) return phong(point, normal, texture2D(earth_texture, texel).rgb);
-	else if (material == 1.0) return phong(point, normal, texture2D(moon_texture, texel).rgb);
+	if (material == 0.0) return phongify(point, normal, texture2D(earth_texture, texel).rgb);
+	else if (material == 1.0) return phongify(point, normal, texture2D(moon_texture, texel).rgb);
+	else if (material == 2.0) return phongify(point, normal, texture2D(mars_texture, texel).rgb);
 
 }
 
@@ -154,7 +177,7 @@ vec3 rayMarch (vec3 pO, vec3 v) {
 		if (step < ray_EPSILON) {
 
 			// Set self defined shade of point
-			shade = color(p1, primative.y, primative.z);
+			shade = materialize(p1, primative.y, primative.z);
 			break;
 		}
 
