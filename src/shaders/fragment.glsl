@@ -65,12 +65,12 @@ vec3 phongShade (vec3 point) {
   vec2 texel = vec2(u, v);
 
   // Material Properties
-  vec3 phong_ka = texture2D(image, texel).rgb;//vec(0);
+  vec3 phong_ka = vec3(0);
   vec3 phong_kd = texture2D(image, texel).rgb;//vec3(0.7);
   vec3 phong_ks = texture2D(image, texel).rgb;//vec3(1);
   
   // Light properties
-  vec3 phong_Ia = vec3(0.5);
+  vec3 phong_Ia = vec3(0);
   vec3 phong_Id = vec3(0.7);
   vec3 phong_Is = vec3(1);
   
@@ -93,9 +93,9 @@ vec3 phongShade (vec3 point) {
   + (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)
   
   // Specular
-  + ((dot(N, L) > 0.0) 
-  	? (phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)
-  	: vec3(0))
+  + //((dot(N, L) > 0.0) ? 
+  	(phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)
+  	//: vec3(0.1))
   ;
   
 }
