@@ -108,7 +108,7 @@ float rand(vec2 co){
 vec3 rayMarch (vec3 pO, vec3 v) {
 
 	// Sky color
-	vec3 shade = vec3(0.1);
+	vec3 shade = vec3(0);
 
 	// Marched distance
 	float distance = 0.0;
