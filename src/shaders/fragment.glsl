@@ -66,7 +66,7 @@ vec3 mars (vec3 point) {
 	// Radius of Mars
 	float radius = 0.45;
 
-	vec3 center = vec3(light.x, -light.yz);
+	vec3 center = origin;
 
 	// Distance to moon
 	float dist = sphere(point, center, radius);
@@ -84,9 +84,7 @@ vec3 join (vec3 thing, vec3 other) {
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return join(earth(point),
-  		 join(moon(point),
-  		 	  mars(point)));
+  return mars(point);
 }
 
 vec3 normal (vec3 point) {
@@ -103,7 +101,7 @@ vec3 normal (vec3 point) {
 vec3 phongify (vec3 point, vec3 normal, vec3 material) {
 
   // Material Properties
-  vec3 phong_ka = material;
+  vec3 phong_ka = vec3(0);
   vec3 phong_kd = material;
   vec3 phong_ks = material;
   

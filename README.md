@@ -20,3 +20,4 @@ Rotate viewer: `mousedown` + `mousemove`
 
 ## Screenshots
 ![Earth](https://raw.github.com/danrpts/raymarch/master/public/screenshot1.png)
+![Mars](https://raw.github.com/danrpts/raymarch/master/public/screenshot2.png)
