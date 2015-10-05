@@ -1,4 +1,4 @@
-#define _PI_ 3.1415926535897932384626433832795
+#define _PI_ 3.141592653589793238462643383279
 precision highp float;  
 varying vec2 uv;
 uniform vec2 resolution;
@@ -56,7 +56,7 @@ vec3 phongShade (vec3 point) {
   vec3 N = normal(point);
 
   float theta = atan(point.x, point.z) + _PI_; // theta E [0, 2PI)
-  float u = theta /  (2.0 * _PI_);
+  float u = theta / (2.0 * _PI_);
   float phi = acos(point.y / 0.5); // phi E [0, PI]
   float v = phi / _PI_;
 
@@ -68,7 +68,7 @@ vec3 phongShade (vec3 point) {
   vec3 phong_ks = texture2D(image, texel).rgb;//vec3(1);
   
   // Light properties
-  vec3 phong_Ia = vec3(0.3);
+  vec3 phong_Ia = vec3(0.5);
   vec3 phong_Id = vec3(0.7);
   vec3 phong_Is = vec3(1);
   
@@ -98,11 +98,15 @@ vec3 phongShade (vec3 point) {
   
 }
 
-// March along a ray defined by an origin and direction
-vec3 rayMarch (vec3 pO, vec3 rD) {
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
 
-	// Default/sky color
-	vec3 shade = vec3(0.1, 0.1, 0.3);
+// March along a ray defined by an origin and direction
+vec3 rayMarch (vec3 pO, vec3 v) {
+
+	// Sky color
+	vec3 shade = vec3(0.1);
 
 	// Marched distance
 	float distance = 0.0;
@@ -112,7 +116,7 @@ vec3 rayMarch (vec3 pO, vec3 rD) {
 	for (int i = 0; i < ray_MAX_STEPS; ++i) {
 		
 		// Formulate p1 with point-vector addition
-		p1 = pO + distance * rD;
+		p1 = pO + distance * v;
 
 		// Check point p1 against CSG surfaces
 		float step = scene(p1);
