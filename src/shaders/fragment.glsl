@@ -55,9 +55,11 @@ vec3 phongShade (vec3 point) {
   // Get surface normal
   vec3 N = normal(point);
 
-  float theta = atan(point.x, point.z) + _PI_; // theta E [0, 2PI)
+  float r = 0.5;
+  vec3 d = r * N;
+  float theta = atan(d.x, d.z) + _PI_; // theta E [0, 2PI)
   float u = theta / (2.0 * _PI_);
-  float phi = acos(point.y / 0.5); // phi E [0, PI]
+  float phi = acos(d.y / r); // phi E [0, PI]
   float v = phi / _PI_;
 
   vec2 texel = vec2(u, v);
