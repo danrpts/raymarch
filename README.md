@@ -1,8 +1,6 @@
 # Raymarch
 A lightweight WebGl raymarching engine for experimental and educational uses
 
-![Earth](https://raw.github.com/danrpts/raymarch/master/public/demo.png)
-
 ## Install
 	
 	git clone https://github.com/danrpts/raymarch.git
@@ -19,3 +17,6 @@ The application is now hosted at http://localhost:8080
 
 ## Controls
 Rotate viewer: `mousedown` + `mousemove`
+
+## Screenshots
+![Earth](https://raw.github.com/danrpts/raymarch/master/public/screenshot1.png)
