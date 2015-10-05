@@ -62,14 +62,26 @@ $(function () {
     require('./controls.js')(canvas, gl, program);
     
     // put texture on gpu
-    var texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // Not doing this makes texture sphere mapping easier IMO
+    var earth_texture = gl.createTexture();
+    gl.uniform1i(gl.getUniformLocation(program, "earth_texture"), 0);
+    gl.activeTexture(gl.TEXTURE0 + 0); // Texture unit 0
+    gl.bindTexture(gl.TEXTURE_2D, earth_texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, $('#texture')[0]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, $('#earth_texture')[0]);
+    gl.generateMipmap(gl.TEXTURE_2D);
+
+    var moon_texture = gl.createTexture();
+    gl.uniform1i(gl.getUniformLocation(program, "moon_texture"), 1);
+    gl.activeTexture(gl.TEXTURE0 + 1); // Texture unit 1
+    gl.bindTexture(gl.TEXTURE_2D, moon_texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, $('#moon_texture')[0]);
     gl.generateMipmap(gl.TEXTURE_2D);
    
     gl.clearColor(0, 0, 0, 1); // set canvas color

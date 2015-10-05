@@ -9,7 +9,8 @@ uniform float focal;
 uniform float light_x;
 uniform float light_y;
 uniform float light_z;
-uniform sampler2D image;
+uniform sampler2D earth_texture;
+uniform sampler2D moon_texture;
 uniform mat4 rotate_viewer;
 uniform mat4 rotate_scene;
 vec3 origin;
@@ -23,51 +24,17 @@ float ray_EPSILON = 0.001 / fineness;
 const int ray_MAX_STEPS = 64;
 
 // Sphere distance estimator
-float sphere (vec3 point, vec3 position, float radius) {
-  return length(point - position) - radius;
-}
-
-// Torus distance estimator
-float cube (vec3 point, vec3 position, float lwh) {
-  return length(max(abs(point - position) - vec3(lwh), 0.0));
-}
-
-// Define the entire scene here
-float scene (vec3 point) {
-  return min(sphere(point, origin, 0.5),
-			 sphere(point, light, 0.1));
-}
-
-// Get surface normal for a point
-vec3 normal (vec3 point) {
-  vec3 x = vec3(ray_EPSILON, 0, 0);
-  vec3 y = vec3(0, ray_EPSILON, 0);
-  vec3 z = vec3(0, 0, ray_EPSILON);
-  return normalize(vec3(
-    scene(point+x) - scene(point-x),
-    scene(point+y) - scene(point-y),
-    scene(point+z) - scene(point-z)));
+float sphere (vec3 point, vec3 center, float radius) {
+  return length(point - center) - radius;
 }
 
 // Get RGB phong shade for a point
-vec3 phongShade (vec3 point) {
-
-  // Get surface normal
-  vec3 N = normal(point);
-
-  float r = 0.5;
-  vec3 d = r * N;
-  float theta = atan(d.x, d.z) + _PI_; // theta E [0, 2PI)
-  float u = theta / (2.0 * _PI_);
-  float phi = acos(d.y / r); // phi E [0, PI]
-  float v = phi / _PI_;
-
-  vec2 texel = vec2(u, v);
+vec3 phong (vec3 point, vec3 normal, vec3 material) {
 
   // Material Properties
   vec3 phong_ka = vec3(0);
-  vec3 phong_kd = texture2D(image, texel).rgb;//vec3(0.7);
-  vec3 phong_ks = texture2D(image, texel).rgb;//vec3(1);
+  vec3 phong_kd = material;
+  vec3 phong_ks = material;
   
   // Light properties
   vec3 phong_Ia = vec3(0);
@@ -90,18 +57,76 @@ vec3 phongShade (vec3 point) {
   (phong_ka * phong_Ia)
   
   // Diffuse
-  + (phong_kd * clamp(dot(N, L), 0.0, 1.0) * phong_Id)
+  + (phong_kd * clamp(dot(normal, L), 0.0, 1.0) * phong_Id)
   
   // Specular
-  + //((dot(N, L) > 0.0) ? 
-  	(phong_ks * pow(dot(N, H), 4.0 * phong_alpha) * phong_Is)
-  	//: vec3(0.1))
+  + (phong_ks * pow(dot(normal, H), 4.0 * phong_alpha) * phong_Is)
   ;
   
 }
 
-float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+vec3 earth (vec3 point) {
+
+	// Radius of Earth
+	float radius = 0.5;
+
+	vec3 center = origin;
+
+	// Distance to Earth
+	float dist = sphere(point, center, radius);
+
+	// Matieral ID for Earth texture
+	float material = 0.0;
+
+	return vec3(dist, material, radius);
+}
+
+vec3 moon (vec3 point) {
+
+	// Radius of moon
+	float radius = 0.3;
+
+	vec3 center = -light / 2.0;
+
+	// Distance to moon
+	float dist = sphere(point, center, radius);
+
+	// Matieral ID for Moon texture
+	float material = 1.0;
+
+	return vec3(dist, material, radius);
+}
+
+vec3 join (vec3 thing, vec3 other) {
+	return (thing.x < other.x) ? thing : other;
+}
+
+// Define the entire scene here
+vec3 scene (vec3 point) {
+  return join(earth(point), moon(point));
+}
+
+vec3 normal (vec3 point) {
+  vec3 x = vec3(ray_EPSILON, 0, 0);
+  vec3 y = vec3(0, ray_EPSILON, 0);
+  vec3 z = vec3(0, 0, ray_EPSILON);
+  return normalize(vec3(
+    scene(point+x).x - scene(point-x).x,
+    scene(point+y).x - scene(point-y).x,
+    scene(point+z).x - scene(point-z).x));
+}
+
+vec3 color (vec3 point, float material, float radius) {
+
+	vec3 normal = normal(point);
+	vec3 d = radius * normal;
+	float theta = atan(d.x, d.z) + _PI_; // theta E [0, 2PI)
+	float phi = acos(d.y / radius); // phi E [0, PI]
+	vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
+
+	if (material == 0.0) return phong(point, normal, texture2D(earth_texture, texel).rgb);
+	else if (material == 1.0) return phong(point, normal, texture2D(moon_texture, texel).rgb);
+
 }
 
 // March along a ray defined by an origin and direction
@@ -111,48 +136,34 @@ vec3 rayMarch (vec3 pO, vec3 v) {
 	vec3 shade = vec3(0);
 
 	// Marched distance
-	float distance = 0.0;
+	float dist = 0.0;
 
 	// Begin marching
 	vec3 p1;
 	for (int i = 0; i < ray_MAX_STEPS; ++i) {
 		
 		// Formulate p1 with point-vector addition
-		p1 = pO + distance * v;
+		p1 = pO + dist * v;
+
+		vec3 primative = scene(p1);
 
 		// Check point p1 against CSG surfaces
-		float step = scene(p1);
+		float step = primative.x;
 		
 		// If within the minimum surface threshold
 		if (step < ray_EPSILON) {
 
-			// Apply Blinn-Phong shading
-			shade = vec3(phongShade(p1));
+			// Set self defined shade of point
+			shade = color(p1, primative.y, primative.z);
 			break;
 		}
 
-		// Increment safe distance
-		distance += step;
+		// Increment safe-marchable distance
+		dist += step;
 	}
 
 	// Done!
 	return shade;
-}
-
-mat3 lookAtRH (vec3 eye, vec3 at, vec3 up) {
-	vec3 z = normalize(eye - at);
-	vec3 x = normalize(cross(up, z));
-	vec3 y = normalize(cross(z, x));
-	vec3 o = -eye;
-	return mat3(x,y,z);
-}
-
-mat3 lookAtLH (vec3 eye, vec3 at, vec3 up) {
-	vec3 z = normalize(eye - at);
-	vec3 x = normalize(cross(up, z));
-	vec3 y = normalize(cross(z, x));
-	vec3 o = -eye;
-	return mat3(z,y,x);
 }
 
 void main () {
