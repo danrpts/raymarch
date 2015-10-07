@@ -10,8 +10,8 @@ uniform float light_x;
 uniform float light_y;
 uniform float light_z;
 uniform sampler2D earth_texture;
-uniform sampler2D moon_texture;
 uniform sampler2D mars_texture;
+uniform sampler2D light_texture;
 uniform mat4 rotate_viewer;
 uniform mat4 rotate_scene;
 vec3 origin;
@@ -26,7 +26,16 @@ const int ray_MAX_STEPS = 64;
 
 // Sphere distance estimator
 float sphere (vec3 point, vec3 center, float radius) {
+
+  // Equation of a sphere
   return length(point - center) - radius;
+}
+
+// Plane distance estimator
+float plane (vec3 point, vec3 center) {
+  
+  // Equation of a plane
+  return dot(point - center, vec3(0, 1, 0));
 }
 
 vec3 earth (vec3 point) {
@@ -45,22 +54,6 @@ vec3 earth (vec3 point) {
 	return vec3(dist, material, radius);
 }
 
-vec3 moon (vec3 point) {
-
-	// Radius of moon
-	float radius = 0.3;
-
-	vec3 center = -light / 2.0;
-
-	// Distance to moon
-	float dist = sphere(point, center, radius);
-
-	// Matieral ID for Moon texture
-	float material = 1.0;
-
-	return vec3(dist, material, radius);
-}
-
 vec3 mars (vec3 point) {
 
 	// Radius of Mars
@@ -72,9 +65,23 @@ vec3 mars (vec3 point) {
 	float dist = sphere(point, center, radius);
 
 	// Matieral ID for Mars texture
-	float material = 2.0;
+	float material = 1.0;
 
 	return vec3(dist, material, radius);
+}
+
+vec3 pointlight (vec3 point) {
+	float radius = 0.3;
+	vec3 center = light;
+	float dist = sphere(point, center, radius);
+	float material = 2.0;
+	return vec3(dist, material, radius);
+}
+
+vec3 ground (vec3 point) {
+	float dist = plane(point, origin - vec3(0, 0.5, 0));
+	float material = 3.0;
+	return vec3(dist, material, 0.0);
 }
 
 // check which object is closer
@@ -84,7 +91,7 @@ vec3 join (vec3 thing, vec3 other) {
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return mars(point);
+  return join(ground(point), pointlight(point));
 }
 
 vec3 normal (vec3 point) {
@@ -145,8 +152,9 @@ vec3 materialize (vec3 point, float material, float radius) {
 	vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
 
 	if (material == 0.0) return phongify(point, normal, texture2D(earth_texture, texel).rgb);
-	else if (material == 1.0) return phongify(point, normal, texture2D(moon_texture, texel).rgb);
-	else if (material == 2.0) return phongify(point, normal, texture2D(mars_texture, texel).rgb);
+	else if (material == 1.0) return phongify(point, normal, texture2D(mars_texture, texel).rgb);
+	else if (material == 2.0) return phongify(point, normal, texture2D(light_texture, texel).rgb);
+	else if (material == 3.0) return phongify(point, vec3(0,1,0), vec3(1));
 
 }
 

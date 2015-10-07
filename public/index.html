@@ -13,18 +13,18 @@
     </style>
   </head>
     <body>
-      <img src="http://localhost:8080/moon.jpg" crossorigin="anonymous" id="moon_texture" style="display:none;">
       <img src="http://localhost:8080/mars.jpg" crossorigin="anonymous" id="mars_texture" style="display:none;">
       <img src="http://localhost:8080/earth.jpg" crossorigin="anonymous" id="earth_texture" style="display:none;">
+      <img src="http://localhost:8080/light.png" crossorigin="anonymous" id="light_texture" style="display:none;">
       <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
       <div class="mdl-layout__drawer">
-        <span class="mdl-layout-title">Controls</span>
+        <span class="mdl-layout-title">Override</span>
         <ul style="list-style: none;" class="mdl-navigation">
           <li>Fineness: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="16" step="1" value="1" id="fineness" oninput="update(this.id, value)"></li>
           <li>Shininess: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="16" step="1" value="6" id="phong_alpha" oninput="update(this.id, value)"></li>
           <li>Focal: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="5" step="1" value="1" id="focal" oninput="update(this.id, value)"></li>
-          <li>Light X: <input class="mdl-slider mdl-js-slider" type="range" min="-3" max="3" step="1" value="-3" id="light_x" oninput="update(this.id, value)"></li>
-          <li>Light Y: <input class="mdl-slider mdl-js-slider" type="range" min="-3" max="3" step="1" value="-2" id="light_y" oninput="update(this.id, value)"></li>
+          <li>Light X: <input class="mdl-slider mdl-js-slider" type="range" min="-3" max="3" step="1" value="0" id="light_x" oninput="update(this.id, value)"></li>
+          <li>Light Y: <input class="mdl-slider mdl-js-slider" type="range" min="-3" max="3" step="1" value="0" id="light_y" oninput="update(this.id, value)"></li>
           <li>Light Z: <input class="mdl-slider mdl-js-slider" type="range" min="-3" max="3" step="1" value="3" id="light_z" oninput="update(this.id, value)"></li>
         </ul>
       </div>
