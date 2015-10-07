@@ -151,7 +151,7 @@ vec3 materialize (vec3 point, float material, float radius) {
 	float phi = acos(d.y / radius); // phi E [0, PI]
 	vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
 
-	if      (material == 0.0) return phongify(point, normal, light + vec3(0,0,-2), texture2D(sun_texture, texel).rgb);
+	if      (material == 0.0) return texture2D(sun_texture, texel).rgb;
 	
 	else if (material == 1.0) return phongify(point, normal, light, texture2D(earth_texture, texel).rgb);
 	

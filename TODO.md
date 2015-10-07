@@ -2,8 +2,6 @@
 - [ ] Comments
 - [ ] Tests
 - [ ] Document function signatures and return values
-- [ ] Fix incorrect sphere texture mapping
-- [ ] Fix texture mapping problem with object rotations
 - [ ] Application functionality 'builds' the shader
 
 # Application
@@ -35,7 +33,7 @@
 # Material Properties
 - [ ] Ui
 - [ ] Texture upload
-- [ ] Texture mapping
+- [x] Texture mapping
 
 # Camera Controls
 - [ ] Ui
@@ -51,4 +49,4 @@
 - [ ] Ui
 - [ ] Point light creation
 - [ ] Volumetric Lighting
-- [ ] Look for bugs in phong shading
+- [x] Look for bugs in phong shading
