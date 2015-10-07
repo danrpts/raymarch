@@ -61,10 +61,21 @@ $(function () {
     // temporary 
     require('./controls.js')(canvas, gl, program);
     
-    // put texture on gpu
-    var earth_texture = gl.createTexture();
-    gl.uniform1i(gl.getUniformLocation(program, "earth_texture"), 0);
+
+    var sun_texture = gl.createTexture();
+    gl.uniform1i(gl.getUniformLocation(program, "sun_texture"), 0);
     gl.activeTexture(gl.TEXTURE0 + 0); // Texture 0
+    gl.bindTexture(gl.TEXTURE_2D, sun_texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, $('#sun_texture')[0]);
+    gl.generateMipmap(gl.TEXTURE_2D);
+
+    var earth_texture = gl.createTexture();
+    gl.uniform1i(gl.getUniformLocation(program, "earth_texture"), 1);
+    gl.activeTexture(gl.TEXTURE0 + 1); // Texture 1
     gl.bindTexture(gl.TEXTURE_2D, earth_texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -74,25 +85,14 @@ $(function () {
     gl.generateMipmap(gl.TEXTURE_2D);
 
     var mars_texture = gl.createTexture();
-    gl.uniform1i(gl.getUniformLocation(program, "mars_texture"), 1);
-    gl.activeTexture(gl.TEXTURE0 + 1); // Texture 1
+    gl.uniform1i(gl.getUniformLocation(program, "mars_texture"), 2);
+    gl.activeTexture(gl.TEXTURE0 + 2); // Texture 2
     gl.bindTexture(gl.TEXTURE_2D, mars_texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, $('#mars_texture')[0]);
-    gl.generateMipmap(gl.TEXTURE_2D);
-
-    var light_texture = gl.createTexture();
-    gl.uniform1i(gl.getUniformLocation(program, "light_texture"), 2);
-    gl.activeTexture(gl.TEXTURE0 + 2); // Texture 2
-    gl.bindTexture(gl.TEXTURE_2D, light_texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, $('#light_texture')[0]);
     gl.generateMipmap(gl.TEXTURE_2D);
    
     gl.clearColor(0, 0, 0, 1); // set canvas color

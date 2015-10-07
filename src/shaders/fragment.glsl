@@ -9,9 +9,9 @@ uniform float focal;
 uniform float light_x;
 uniform float light_y;
 uniform float light_z;
+uniform sampler2D sun_texture;
 uniform sampler2D earth_texture;
 uniform sampler2D mars_texture;
-uniform sampler2D light_texture;
 uniform mat4 rotate_viewer;
 uniform mat4 rotate_scene;
 vec3 origin;
@@ -38,6 +38,20 @@ float plane (vec3 point, vec3 center) {
   return dot(point - center, vec3(0, 1, 0));
 }
 
+vec3 ground (vec3 point) {
+	float dist = plane(point, origin - vec3(0, 0.5, 0));
+	float material = 3.0;
+	return vec3(dist, material, 0.0);
+}
+
+vec3 pointlight (vec3 point) {
+	float radius = 0.1;
+	vec3 center = light;
+	float dist = sphere(point, center, radius);
+	float material = 0.0;
+	return vec3(dist, material, radius);
+}
+
 vec3 earth (vec3 point) {
 
 	// Radius of Earth
@@ -49,7 +63,7 @@ vec3 earth (vec3 point) {
 	float dist = sphere(point, center, radius);
 
 	// Matieral ID for Earth texture
-	float material = 0.0;
+	float material = 1.0;
 
 	return vec3(dist, material, radius);
 }
@@ -65,23 +79,9 @@ vec3 mars (vec3 point) {
 	float dist = sphere(point, center, radius);
 
 	// Matieral ID for Mars texture
-	float material = 1.0;
-
-	return vec3(dist, material, radius);
-}
-
-vec3 pointlight (vec3 point) {
-	float radius = 0.3;
-	vec3 center = light;
-	float dist = sphere(point, center, radius);
 	float material = 2.0;
-	return vec3(dist, material, radius);
-}
 
-vec3 ground (vec3 point) {
-	float dist = plane(point, origin - vec3(0, 0.5, 0));
-	float material = 3.0;
-	return vec3(dist, material, 0.0);
+	return vec3(dist, material, radius);
 }
 
 // check which object is closer
@@ -91,7 +91,7 @@ vec3 join (vec3 thing, vec3 other) {
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return join(ground(point), pointlight(point));
+  return join(pointlight(point), join(ground(point), earth(point)));
 }
 
 vec3 normal (vec3 point) {
@@ -105,7 +105,7 @@ vec3 normal (vec3 point) {
 }
 
 // Get RGB Phong
-vec3 phongify (vec3 point, vec3 normal, vec3 material) {
+vec3 phongify (vec3 point, vec3 normal, vec3 light, vec3 material) {
 
   // Material Properties
   vec3 phong_ka = vec3(0);
@@ -151,10 +151,13 @@ vec3 materialize (vec3 point, float material, float radius) {
 	float phi = acos(d.y / radius); // phi E [0, PI]
 	vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
 
-	if (material == 0.0) return phongify(point, normal, texture2D(earth_texture, texel).rgb);
-	else if (material == 1.0) return phongify(point, normal, texture2D(mars_texture, texel).rgb);
-	else if (material == 2.0) return phongify(point, normal, texture2D(light_texture, texel).rgb);
-	else if (material == 3.0) return phongify(point, vec3(0,1,0), vec3(1));
+	if      (material == 0.0) return phongify(point, normal, light + vec3(0,0,-2), texture2D(sun_texture, texel).rgb);
+	
+	else if (material == 1.0) return phongify(point, normal, light, texture2D(earth_texture, texel).rgb);
+	
+	else if (material == 2.0) return phongify(point, normal, light, texture2D(mars_texture, texel).rgb);
+	
+	else if (material == 3.0) return phongify(point, vec3(0,1,0), light, vec3(1));
 
 }
 
