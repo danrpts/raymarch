@@ -31,6 +31,15 @@ float sphere (vec3 point, vec3 center, float radius) {
   return length(point - center) - radius;
 }
 
+
+// Cube distance estimator
+float cube (vec3 point, vec3 center, float edgelength) {
+	vec3 p = abs(point - center);
+
+	// Equation of a cube
+	return max(p.x, max(p.y, p.z)) - edgelength / 2.0;
+}
+
 // Plane distance estimator
 float plane (vec3 point, vec3 center) {
   
