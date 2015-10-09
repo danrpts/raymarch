@@ -44,7 +44,7 @@ float plane (vec3 point, vec3 center, vec3 up) {
 }
 
 vec3 ground (vec3 point) {
-	float dist = plane(point, origin - vec3(0, 0, 0), vec3(0, 1, 0));
+	float dist = plane(point, origin - vec3(0, 1, 0), vec3(0, 1, 0));
 	float material = 3.0;
 	return vec3(dist, material, 0.0);
 }
