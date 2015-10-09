@@ -23,7 +23,7 @@ vec3 eye;
 float ray_EPSILON = 0.001 / fineness;
 
 // Max allowable steps along ray
-int ray_MAX_STEPS = int(10.0 * iterations);
+float ray_MAX_STEPS = 10.0 * iterations;
 
 // Hollow sphere distance estimator
 float sphere (vec3 point, vec3 center, float radius) {
@@ -49,14 +49,6 @@ vec3 ground (vec3 point) {
 	return vec3(dist, material, 0.0);
 }
 
-vec3 sun (vec3 point) {
-	float radius = 0.1;
-	vec3 center = light;
-	float dist = sphere(point, center, radius);
-	float material = 0.0;
-	return vec3(dist, material, radius);
-}
-
 vec3 earth (vec3 point) {
 
 	// Radius of the Earth
@@ -74,22 +66,6 @@ vec3 earth (vec3 point) {
 	return vec3(dist, material, radius);
 }
 
-vec3 mars (vec3 point) {
-
-	// Radius of Mars
-	float radius = 0.45;
-
-	vec3 center = origin;
-
-	// Distance to moon
-	float dist = sphere(point, center, radius);
-
-	// Matieral ID for Mars texture
-	float material = 2.0;
-
-	return vec3(dist, material, radius);
-}
-
 // check which object is closer
 vec3 join (vec3 thing, vec3 other) {
 	return (thing.x < other.x) ? thing : other;
@@ -97,7 +73,7 @@ vec3 join (vec3 thing, vec3 other) {
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return join(ground(point), join(sun(point), earth(point)));
+  return join(ground(point), earth(point));
 }
 
 vec3 normal (vec3 point) {
@@ -147,60 +123,93 @@ vec3 phongify (vec3 point, vec3 normal, vec3 light, vec3 material) {
   
 }
 
+float shadow (vec3 p0) {
+
+	vec3 p1;
+	float alpha = 1.0;
+	// Start small distancs away from origin surface
+	float distance = 0.1;
+	vec3 v = normalize(light - p0);
+	float maxDistance = length(light - p0);
+	for (float i = 0.0; i < 101.0; ++i) {
+		
+		// Hack to allow variable iteration depth
+		if (distance >= maxDistance) break;
+
+		// Formulate p1 with point-vector addition
+		p1 = p0 + distance * v;
+
+		// Attempt to intersect a surface
+		vec3 intersection = scene(p1);
+
+		// Check intersection within threshold
+		float step = intersection.x;
+		if (step < ray_EPSILON) {
+			alpha = 0.0;
+			break;
+		}
+
+		// Increment safe-marchable distance
+		distance += step;
+	}
+
+	return alpha;
+
+}
+
 vec3 materialize (vec3 point, float material, float radius) {
 
-	vec3 normal = normal(point);
+  vec3 normal = normal(point);
 
-	// Need to remove depedence on radius
-	vec3 d = radius * normal;
-	float theta = atan(d.x, d.z) + _PI_; // theta E [0, 2PI)
-	float phi = acos(d.y / radius); // phi E [0, PI]
-	vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
+  // Need to remove depedence on radius
+  vec3 d = radius * normal;
+  float theta = atan(d.x, d.z) + _PI_; // theta E [0, 2PI)
+  float phi = acos(d.y / radius); // phi E [0, PI]
+  vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
 
-	if      (material == 0.0) return texture2D(sun_texture, texel).rgb;
-	
-	else if (material == 1.0) return phongify(point, normal, light, texture2D(earth_texture, texel).rgb);
-	
-	else if (material == 2.0) return phongify(point, normal, light, texture2D(mars_texture, texel).rgb);
-	
-	else if (material == 3.0) return phongify(point, normal, light, vec3(1));
+  if      (material == 0.0) return texture2D(sun_texture, texel).rgb;
+  
+  else if (material == 1.0) return phongify(point, normal, light, texture2D(earth_texture, texel).rgb);
+  
+  else if (material == 2.0) return phongify(point, normal, light, texture2D(mars_texture, texel).rgb);
+  
+  else                      return phongify(point, normal, light, vec3(shadow(point)));
 
 }
 
 // March along a ray defined by an origin and direction
-vec3 rayMarch (vec3 pO, vec3 v) {
+vec3 rayMarch (vec3 p0, vec3 v) {
 
 	// Sky color
 	vec3 shade = vec3(0);
 
 	// Marched distance
-	float dist = 0.0;
+	float distance = 0.0;
 
 	// Begin marching
 	vec3 p1;
-	for (int i = 0; i < 101; ++i) {
+	for (float i = 0.0; i < 101.0; ++i) {
 		
 		// Hack to allow variable iteration depth
 		if (i > ray_MAX_STEPS) break;
 
 		// Formulate p1 with point-vector addition
-		p1 = pO + dist * v;
+		p1 = p0 + distance * v;
 
-		vec3 primative = scene(p1);
+		// Attempt to intersect a surface
+		vec3 intersection = scene(p1);
 
-		// Check point p1 against CSG surfaces
-		float step = primative.x;
-		
-		// If within the minimum surface threshold
+		// Check intersection within threshold
+		float step = intersection.x;
 		if (step < ray_EPSILON) {
 
 			// Set self defined shade of point
-			shade = materialize(p1, primative.y, primative.z);
+			shade = materialize(p1, intersection.y, intersection.z);
 			break;
 		}
 
 		// Increment safe-marchable distance
-		dist += step;
+		distance += step;
 	}
 
 	// Done!
