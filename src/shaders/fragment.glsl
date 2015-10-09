@@ -1,10 +1,11 @@
 #define _PI_ 3.141592653589793238462643383279
-precision highp float;  
+precision highp float;
 varying vec2 uv;
 uniform vec2 resolution;
 uniform vec3 mouse;
 uniform float phong_alpha;
 uniform float fineness;
+uniform float iterations;
 uniform float focal;
 uniform float light_x;
 uniform float light_y;
@@ -22,7 +23,7 @@ vec3 eye;
 float ray_EPSILON = 0.001 / fineness;
 
 // Max allowable steps along ray
-const int ray_MAX_STEPS = 64;
+int ray_MAX_STEPS = int(10.0 * iterations);
 
 // Hollow sphere distance estimator
 float sphere (vec3 point, vec3 center, float radius) {
@@ -178,8 +179,11 @@ vec3 rayMarch (vec3 pO, vec3 v) {
 
 	// Begin marching
 	vec3 p1;
-	for (int i = 0; i < ray_MAX_STEPS; ++i) {
+	for (int i = 0; i < 101; ++i) {
 		
+		// Hack to allow variable iteration depth
+		if (i > ray_MAX_STEPS) break;
+
 		// Formulate p1 with point-vector addition
 		p1 = pO + dist * v;
 

@@ -20,7 +20,8 @@
       <div class="mdl-layout__drawer">
         <span class="mdl-layout-title">Override</span>
         <ul style="list-style: none;" class="mdl-navigation">
-          <li>Fineness: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="16" step="1" value="1" id="fineness" oninput="update(this.id, value)"></li>
+          <li>Fineness x1/1000: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="10" step="1" value="1" id="fineness" oninput="update(this.id, value)"></li>
+          <li>Iterations x10: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="10" step="1" value="6" id="iterations" oninput="update(this.id, value)"></li>
           <li>Shininess: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="16" step="1" value="6" id="phong_alpha" oninput="update(this.id, value)"></li>
           <li>Focal: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="5" step="1" value="1" id="focal" oninput="update(this.id, value)"></li>
           <li>Light X: <input class="mdl-slider mdl-js-slider" type="range" min="-3" max="3" step="1" value="0" id="light_x" oninput="update(this.id, value)"></li>

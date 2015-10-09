@@ -52,6 +52,7 @@ $(function () {
     gl.uniform3fv(gl.getUniformLocation(program, 'mouse'), new Float32Array([0, 0, 0]));
     gl.uniform2fv(gl.getUniformLocation(program, 'resolution'), new Float32Array([canvas.width, canvas.height]));
     gl.uniform1f(gl.getUniformLocation(program, 'fineness'), $('#fineness').val());
+    gl.uniform1f(gl.getUniformLocation(program, 'iterations'), $('#iterations').val());
     gl.uniform1f(gl.getUniformLocation(program, 'phong_alpha'), $('#phong_alpha').val());
     gl.uniform1f(gl.getUniformLocation(program, 'focal'), $('#focal').val());
     gl.uniform1f(gl.getUniformLocation(program, 'light_x'), $('#light_x').val());
