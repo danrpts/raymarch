@@ -17,14 +17,26 @@ float cube (vec3 point, vec3 center, float edgelength) {
          - edgelength / 2.0;
 }
 
+// Hollow cone distance estimator
+// Not working yet
+float cone (vec3 point, vec3 center, float radius, float height) {
+  
+  vec3 p = point - center;
+  float c = radius / height;
+  float y = p.y * c;
+
+  // Equation of a cone
+  return (p.x * p.x + p.z * p.z) - (y * y);
+}
+
 // Hollow torus distance estimator
 float torus (vec3 point, vec3 center, float majorRadius, float minorRadius) {
 
   vec3 p = point - center;
 
   // Equation of a torus
-  return (majorRadius - sqrt(p.x * p.x + p.z * p.z))
-  		 * (majorRadius - sqrt(p.x * p.x + p.z * p.z))
+  return (majorRadius - length(p.xz))
+  		 * (majorRadius - length(p.xz))
   		 + p.y * p.y
   		 - minorRadius * minorRadius;
 }
