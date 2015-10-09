@@ -4,6 +4,9 @@
 - [ ] Document function signatures and return values
 - [ ] Application functionality 'builds' the shader
 
+# Geometry 
+- [ ] Define more Cartesian primitives
+
 # Application
 - [ ] Ui / Ux
 - [ ] Split material properties out
@@ -15,6 +18,7 @@
 - [ ] Debugger logs
 
 # Canvas
+- [ ] Aspect ratio
 - [ ] Responsive
 
 # Render Controls
@@ -34,6 +38,7 @@
 - [ ] Ui
 - [ ] Texture upload
 - [x] Texture mapping
+- [ ] Move texel calculation to object definition
 
 # Camera Controls
 - [ ] Ui
