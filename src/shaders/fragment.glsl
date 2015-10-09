@@ -31,13 +31,14 @@ float sphere (vec3 point, vec3 center, float radius) {
   return length(point - center) - radius;
 }
 
-
-// Cube distance estimator
-float cube (vec3 point, vec3 center, float edgelength) {
-	vec3 p = abs(point - center);
-
-	// Equation of a cube
-	return max(p.x, max(p.y, p.z)) - edgelength / 2.0;
+// Hollow torus distance estimator
+float torus (vec3 point, vec3 center, float majorRadius, float minorRadius) {
+  
+  // Equation of a plane
+  return (majorRadius - sqrt(point.x * point.x + point.z * point.z))
+  		 * (majorRadius - sqrt(point.x * point.x + point.z * point.z))
+  		 + point.y * point.y
+  		 - minorRadius * minorRadius;
 }
 
 // Plane distance estimator
@@ -63,13 +64,14 @@ vec3 pointlight (vec3 point) {
 
 vec3 earth (vec3 point) {
 
-	// Radius of Earth
+	// Radius of the Earth
 	float radius = 0.5;
 
+	// Location of the Earth
 	vec3 center = origin;
 
 	// Distance to Earth
-	float dist = sphere(point, center, radius);
+	float dist = torus(point, center, radius, radius / 2.0);
 
 	// Matieral ID for Earth texture
 	float material = 1.0;
