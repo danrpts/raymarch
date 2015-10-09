@@ -45,7 +45,7 @@
 - [ ] Fix warping due to look at matrix
 - [x] Virtual trackball movement for camera rotations
 - [x] Trackball rotation about arbitrary axis
-- [ ] User quarternian rotations to avoid Gimble lock
+- [ ] Use quarternian rotations to avoid Gimble lock
 - [x] Project points outside of trackball on to the hemisphere
 - [x] Fix bug when mouse drags to very edge of canvas
 - [ ] Splines
