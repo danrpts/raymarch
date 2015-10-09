@@ -50,7 +50,7 @@ vec3 ground (vec3 point) {
 	return vec3(dist, material, 0.0);
 }
 
-vec3 pointlight (vec3 point) {
+vec3 sun (vec3 point) {
 	float radius = 0.1;
 	vec3 center = light;
 	float dist = sphere(point, center, radius);
@@ -61,7 +61,7 @@ vec3 pointlight (vec3 point) {
 vec3 earth (vec3 point) {
 
 	// Radius of the Earth
-	float radius = 0.5;
+	float radius = 0.50;
 
 	// Location of the Earth
 	vec3 center = origin;
@@ -98,7 +98,7 @@ vec3 join (vec3 thing, vec3 other) {
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return join(pointlight(point), join(ground(point), earth(point)));
+  return join(ground(point), join(sun(point), earth(point)));
 }
 
 vec3 normal (vec3 point) {
@@ -164,7 +164,7 @@ vec3 materialize (vec3 point, float material, float radius) {
 	
 	else if (material == 2.0) return phongify(point, normal, light, texture2D(mars_texture, texel).rgb);
 	
-	else if (material == 3.0) return phongify(point, vec3(0,1,0), light, vec3(1));
+	else if (material == 3.0) return phongify(point, normal, light, vec3(1));
 
 }
 
