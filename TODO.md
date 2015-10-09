@@ -43,7 +43,8 @@
 
 # Camera Controls
 - [ ] Ui
-- [ ] !Fix warping due to look at matrix
+- [ ] ! Fix warping due to projection
+- [ ] Near/far frustrum (will improve rendering speed)
 - [x] Virtual trackball movement for camera rotations
 - [x] Trackball rotation about arbitrary axis
 - [ ] Use quarternian rotations to avoid Gimble lock
