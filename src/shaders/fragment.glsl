@@ -35,17 +35,16 @@ float sphere (vec3 point, vec3 center, float radius) {
 }
 
 // Plane distance estimator
-float plane (vec3 point, vec3 center) {
+float plane (vec3 point, vec3 center, vec3 up) {
   
   vec3 p = point - center;
-  vec3 up = vec3(0, 1, 0);
 
   // Equation of a plane
   return dot(p, up);
 }
 
 vec3 ground (vec3 point) {
-	float dist = plane(point, origin - vec3(0, 0.5, 0));
+	float dist = plane(point, origin - vec3(0, 0, 0), vec3(0, 1, 0));
 	float material = 3.0;
 	return vec3(dist, material, 0.0);
 }
