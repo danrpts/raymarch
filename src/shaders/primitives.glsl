@@ -44,9 +44,7 @@ float cylinder (vec3 point, vec3 center, vec2 ab) {
   vec3 p = point - center;
 
   // Equation of a cylinder
-  return (p.x * p.x) / (ab.x * ab.x)
-       + (p.z * p.z) / (ab.y * ab.y)
-       - 1.0;
+  return dot(p.xy * p.xy, 1.0 / (ab * ab)) - 1.0;
 }
 
 // Hollow cone distance estimator
@@ -56,9 +54,7 @@ float cone (vec3 point, vec3 center, vec3 abc) {
   vec3 p = point - center;
 
   // Equation of a cone
-  return (p.x * p.x) / (abc.x * abc.x)
-       + (p.y * p.y) / (abc.y * abc.y)
-       - (p.z * p.z) / (abc.z * abc.z);
+  return dot(p.xy*p.xy, 1.0/(abc.xy*abc.xy)) - (p.z / abc.z);
 }
 
 // Ellipsoid distance estimator
@@ -67,9 +63,6 @@ float ellipsoid (vec3 point, vec3 center, vec3 abc) {
   
   vec3 p = point - center;
 
-  // Equation of an ellipsoid
-  return (p.x * p.x) / (abc.x * abc.x)
-       + (p.y * p.y) / (abc.y * abc.y)
-       + (p.z * p.z) / (abc.z * abc.z)
-       - 1.0;
+  // Equation of an ellipsoid condensed
+  return dot(p*p, 1.0 / (abc * abc)) - 1.0;
 }
