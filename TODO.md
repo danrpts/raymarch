@@ -22,6 +22,7 @@
 - [ ] Responsive
 
 # Render Controls
+- [ ] Allow bouncing of light rays (nontrivial)
 - [ ] Fogging
 - [x] Shadows
 - [ ] Blend shadows into scene for softness
