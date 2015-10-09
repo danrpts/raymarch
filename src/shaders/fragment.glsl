@@ -66,6 +66,15 @@ vec3 earth (vec3 point) {
 	return vec3(dist, material, radius);
 }
 
+vec3 mars (vec3 point) {
+
+	float radius = 0.45;
+	vec3 center = origin + vec3(0,0,-2);
+	float dist = sphere(point, center, radius);
+	float material = 2.0;
+	return vec3(dist, material, radius);
+}
+
 // check which object is closer
 vec3 join (vec3 thing, vec3 other) {
 	return (thing.x < other.x) ? thing : other;
@@ -73,7 +82,7 @@ vec3 join (vec3 thing, vec3 other) {
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return join(ground(point), earth(point));
+  return join(ground(point), join(mars(point), earth(point)));
 }
 
 vec3 normal (vec3 point) {
@@ -124,11 +133,11 @@ vec3 phongify (vec3 point, vec3 normal, vec3 light, vec3 material) {
 }
 
 float shadow (vec3 p0) {
-
+	
+	// Start small distancs away from originating surface
+	float distance = 0.1;
 	vec3 p1;
 	float alpha = 1.0;
-	// Start small distancs away from origin surface
-	float distance = 0.1;
 	vec3 v = normalize(light - p0);
 	float maxDistance = length(light - p0);
 	for (float i = 0.0; i < 101.0; ++i) {
@@ -144,7 +153,7 @@ float shadow (vec3 p0) {
 
 		// Check intersection within threshold
 		float step = intersection.x;
-		if (step < ray_EPSILON) {
+		if (step <= ray_EPSILON) {
 			alpha = 0.0;
 			break;
 		}
@@ -157,9 +166,10 @@ float shadow (vec3 p0) {
 
 }
 
-vec3 materialize (vec3 point, float material, float radius) {
+vec4 materialize (vec3 point, float material, float radius) {
 
   vec3 normal = normal(point);
+  float shadow = shadow(point);
 
   // Need to remove depedence on radius
   vec3 d = radius * normal;
@@ -167,21 +177,21 @@ vec3 materialize (vec3 point, float material, float radius) {
   float phi = acos(d.y / radius); // phi E [0, PI]
   vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
 
-  if      (material == 0.0) return texture2D(sun_texture, texel).rgb;
+  if      (material == 0.0) return texture2D(sun_texture, texel);
   
-  else if (material == 1.0) return phongify(point, normal, light, texture2D(earth_texture, texel).rgb);
+  else if (material == 1.0) return vec4(phongify(point, normal, light, texture2D(earth_texture, texel).rgb), shadow);
   
-  else if (material == 2.0) return phongify(point, normal, light, texture2D(mars_texture, texel).rgb);
+  else if (material == 2.0) return vec4(phongify(point, normal, light, texture2D(mars_texture, texel).rgb), shadow);
   
-  else                      return phongify(point, normal, light, vec3(shadow(point)));
+  else                      return vec4(phongify(point, normal, light, vec3(1)), shadow);
 
 }
 
 // March along a ray defined by an origin and direction
-vec3 rayMarch (vec3 p0, vec3 v) {
+vec4 rayMarch (vec3 p0, vec3 v) {
 
 	// Sky color
-	vec3 shade = vec3(0);
+	vec4 shade = vec4(0,0,0,1);
 
 	// Marched distance
 	float distance = 0.0;
@@ -201,7 +211,7 @@ vec3 rayMarch (vec3 p0, vec3 v) {
 
 		// Check intersection within threshold
 		float step = intersection.x;
-		if (step < ray_EPSILON) {
+		if (step <= ray_EPSILON) {
 
 			// Set self defined shade of point
 			shade = materialize(p1, intersection.y, intersection.z);
@@ -232,11 +242,8 @@ void main () {
 
 	// Ray direction normal
     vec3 direction = (rotate_viewer * vec4(normalize(vec3(uv.x * aR, uv.y, -focal)),1)).xyz;
-
-	// March to implicit surface
-	vec3 color = rayMarch(eye, direction);
 	
-	// Final color
-	gl_FragColor = vec4(color, 1);
+	// Intersect surfaces
+	gl_FragColor = rayMarch(eye, direction);
 	
 }

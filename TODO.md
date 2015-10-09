@@ -23,7 +23,8 @@
 
 # Render Controls
 - [ ] Fogging
-- [ ] Shadows
+- [x] Shadows
+- [ ] Blend shadows into scene for softness
 - [ ] Anti aliasing / super-sampling
 - [ ] Granularity
 
