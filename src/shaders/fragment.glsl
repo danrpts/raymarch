@@ -24,28 +24,23 @@ float ray_EPSILON = 0.001 / fineness;
 // Max allowable steps along ray
 const int ray_MAX_STEPS = 64;
 
-// Sphere distance estimator
+// Hollow sphere distance estimator
 float sphere (vec3 point, vec3 center, float radius) {
 
-  // Equation of a sphere
-  return length(point - center) - radius;
-}
+ vec3 p = point - center;
 
-// Hollow torus distance estimator
-float torus (vec3 point, vec3 center, float majorRadius, float minorRadius) {
-  
-  // Equation of a plane
-  return (majorRadius - sqrt(point.x * point.x + point.z * point.z))
-  		 * (majorRadius - sqrt(point.x * point.x + point.z * point.z))
-  		 + point.y * point.y
-  		 - minorRadius * minorRadius;
+  // Equation of a sphere
+  return length(p) - radius;
 }
 
 // Plane distance estimator
 float plane (vec3 point, vec3 center) {
   
+  vec3 p = point - center;
+  vec3 up = vec3(0, 1, 0);
+
   // Equation of a plane
-  return dot(point - center, vec3(0, 1, 0));
+  return dot(p, up);
 }
 
 vec3 ground (vec3 point) {
@@ -71,7 +66,7 @@ vec3 earth (vec3 point) {
 	vec3 center = origin;
 
 	// Distance to Earth
-	float dist = torus(point, center, radius, radius / 2.0);
+	float dist = sphere(point, center, radius);
 
 	// Matieral ID for Earth texture
 	float material = 1.0;
