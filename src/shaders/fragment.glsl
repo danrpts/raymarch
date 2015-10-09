@@ -134,7 +134,7 @@ vec3 phongify (vec3 point, vec3 normal, vec3 light, vec3 material) {
 
 float shadow (vec3 p0) {
 	
-	// Start small distancs away from originating surface
+	// Important to start a small distance away from the originating surface
 	float distance = 0.1;
 	vec3 p1;
 	float alpha = 1.0;
@@ -154,7 +154,7 @@ float shadow (vec3 p0) {
 		// Check intersection within threshold
 		float step = intersection.x;
 		if (step <= ray_EPSILON) {
-			alpha = 0.0;
+			alpha = 0.5;
 			break;
 		}
 
@@ -166,10 +166,10 @@ float shadow (vec3 p0) {
 
 }
 
-vec4 materialize (vec3 point, float material, float radius) {
+vec3 materialize (vec3 point, float material, float radius) {
 
   vec3 normal = normal(point);
-  float shadow = shadow(point);
+  float alpha = shadow(point);
 
   // Need to remove depedence on radius
   vec3 d = radius * normal;
@@ -177,21 +177,21 @@ vec4 materialize (vec3 point, float material, float radius) {
   float phi = acos(d.y / radius); // phi E [0, PI]
   vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
 
-  if      (material == 0.0) return texture2D(sun_texture, texel);
+  if      (material == 0.0) return texture2D(sun_texture, texel).rgb;
   
-  else if (material == 1.0) return vec4(phongify(point, normal, light, texture2D(earth_texture, texel).rgb), shadow);
+  else if (material == 1.0) return alpha * phongify(point, normal, light, texture2D(earth_texture, texel).rgb);
   
-  else if (material == 2.0) return vec4(phongify(point, normal, light, texture2D(mars_texture, texel).rgb), shadow);
+  else if (material == 2.0) return alpha * phongify(point, normal, light, texture2D(mars_texture, texel).rgb);
   
-  else                      return vec4(phongify(point, normal, light, vec3(1)), shadow);
+  else                      return alpha * phongify(point, normal, light, vec3(1));
 
 }
 
 // March along a ray defined by an origin and direction
-vec4 rayMarch (vec3 p0, vec3 v) {
+vec3 rayMarch (vec3 p0, vec3 v) {
 
 	// Sky color
-	vec4 shade = vec4(0,0,0,1);
+	vec3 shade = vec3(0);
 
 	// Marched distance
 	float distance = 0.0;
@@ -242,8 +242,8 @@ void main () {
 
 	// Ray direction normal
     vec3 direction = (rotate_viewer * vec4(normalize(vec3(uv.x * aR, uv.y, -focal)),1)).xyz;
-	
+
 	// Intersect the scene
-	gl_FragColor = rayMarch(eye, direction);
+	gl_FragColor = vec4(rayMarch(eye, direction), 1);
 	
 }
