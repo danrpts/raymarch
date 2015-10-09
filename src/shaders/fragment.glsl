@@ -243,7 +243,7 @@ void main () {
 	// Ray direction normal
     vec3 direction = (rotate_viewer * vec4(normalize(vec3(uv.x * aR, uv.y, -focal)),1)).xyz;
 	
-	// Intersect surfaces
+	// Intersect the scene
 	gl_FragColor = rayMarch(eye, direction);
 	
 }

@@ -43,7 +43,7 @@
 
 # Camera Controls
 - [ ] Ui
-- [ ] Fix warping due to look at matrix
+- [ ]!Fix warping due to look at matrix
 - [x] Virtual trackball movement for camera rotations
 - [x] Trackball rotation about arbitrary axis
 - [ ] Use quarternian rotations to avoid Gimble lock
