@@ -22,7 +22,7 @@
 - [ ] Responsive
 
 # Render Controls
-- [ ] Allow bouncing of light rays by discrete amount (nontrivial)
+- [ ] Allow bouncing of light rays by discrete amount (raytracing / nontrivial)
 - [ ] Fogging
 - [x] Shadows
 - [ ] Blend shadows into scene for softness
