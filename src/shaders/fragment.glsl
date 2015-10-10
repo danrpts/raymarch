@@ -10,7 +10,7 @@ uniform float focal;
 uniform float light_x;
 uniform float light_y;
 uniform float light_z;
-uniform sampler2D sun_texture;
+uniform sampler2D venus_texture;
 uniform sampler2D earth_texture;
 uniform sampler2D mars_texture;
 uniform mat4 rotate_viewer;
@@ -49,6 +49,16 @@ vec3 ground (vec3 point) {
 	return vec3(dist, material, 0.0);
 }
 
+vec3 venus (vec3 point) {
+
+	float radius = 0.45;
+	vec3 center = origin + vec3(0,0,2);
+	float dist = sphere(point, center, radius);
+	float material = 0.0;
+	return vec3(dist, material, radius);
+}
+
+
 vec3 earth (vec3 point) {
 
 	// Radius of the Earth
@@ -82,7 +92,7 @@ vec3 join (vec3 thing, vec3 other) {
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return join(ground(point), join(mars(point), earth(point)));
+  return join(ground(point), join(mars(point), join(earth(point), venus(point))));
 }
 
 vec3 normal (vec3 point) {
@@ -177,7 +187,7 @@ vec3 materialize (vec3 point, float material, float radius) {
   float phi = acos(d.y / radius); // phi E [0, PI]
   vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
 
-  if      (material == 0.0) return texture2D(sun_texture, texel).rgb;
+  if      (material == 0.0) return alpha * phongify(point, normal, light, texture2D(venus_texture, texel).rgb);
   
   else if (material == 1.0) return alpha * phongify(point, normal, light, texture2D(earth_texture, texel).rgb);
   

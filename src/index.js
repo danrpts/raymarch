@@ -63,15 +63,15 @@ $(function () {
     require('./controls.js')(canvas, gl, program);
     
 
-    var sun_texture = gl.createTexture();
-    gl.uniform1i(gl.getUniformLocation(program, "sun_texture"), 0);
+    var venus_texture = gl.createTexture();
+    gl.uniform1i(gl.getUniformLocation(program, "venus_texture"), 0);
     gl.activeTexture(gl.TEXTURE0 + 0); // Texture 0
-    gl.bindTexture(gl.TEXTURE_2D, sun_texture);
+    gl.bindTexture(gl.TEXTURE_2D, venus_texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, $('#sun_texture')[0]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, $('#venus_texture')[0]);
     gl.generateMipmap(gl.TEXTURE_2D);
 
     var earth_texture = gl.createTexture();

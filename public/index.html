@@ -13,7 +13,7 @@
     </style>
   </head>
     <body>
-      <img src="http://localhost:8080/sun.jpg" crossorigin="anonymous" id="sun_texture" style="display:none;">
+      <img src="http://localhost:8080/venus.jpg" crossorigin="anonymous" id="venus_texture" style="display:none;">
       <img src="http://localhost:8080/earth.jpg" crossorigin="anonymous" id="earth_texture" style="display:none;">
       <img src="http://localhost:8080/mars.jpg" crossorigin="anonymous" id="mars_texture" style="display:none;">
       <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
@@ -22,6 +22,7 @@
         <ul style="list-style: none;" class="mdl-navigation">
           <li>Fineness x1/1000: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="10" step="1" value="1" id="fineness" oninput="update(this.id, value)"></li>
           <li>Iterations x10: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="10" step="1" value="6" id="iterations" oninput="update(this.id, value)"></li>
+          <li>Sample rate: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="10" step="1" value="1" id="fineness" oninput="update(this.id, value)"></li>
           <li>Shininess: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="16" step="1" value="6" id="phong_alpha" oninput="update(this.id, value)"></li>
           <li>Focal: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="5" step="1" value="1" id="focal" oninput="update(this.id, value)"></li>
           <li>Light X: <input class="mdl-slider mdl-js-slider" type="range" min="-3" max="3" step="1" value="0" id="light_x" oninput="update(this.id, value)"></li>
