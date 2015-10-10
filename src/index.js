@@ -47,20 +47,19 @@ $(function () {
     
     gl.useProgram(program);
     
+    // temporary 
+    require('./controls.js')(canvas, gl, program);
+    
     gl.uniformMatrix4fv(gl.getUniformLocation(program, 'rotate_viewer'), gl.FALSE, new Float32Array(mat4.create()));
     gl.uniformMatrix4fv(gl.getUniformLocation(program, 'rotate_scene'), gl.FALSE, new Float32Array(mat4.create()));
     gl.uniform3fv(gl.getUniformLocation(program, 'mouse'), new Float32Array([0, 0, 0]));
+    gl.uniform3fv(gl.getUniformLocation(program, 'light'), new Float32Array(light2coord()));
     gl.uniform2fv(gl.getUniformLocation(program, 'resolution'), new Float32Array([canvas.width, canvas.height]));
-    gl.uniform1f(gl.getUniformLocation(program, 'fineness'), $('#fineness').val());
+    gl.uniform1f(gl.getUniformLocation(program, 'epsilon'), $('#epsilon').val());
     gl.uniform1f(gl.getUniformLocation(program, 'iterations'), $('#iterations').val());
+    gl.uniform1f(gl.getUniformLocation(program, 'samples'), $('#samples').val());
     gl.uniform1f(gl.getUniformLocation(program, 'phong_alpha'), $('#phong_alpha').val());
     gl.uniform1f(gl.getUniformLocation(program, 'focal'), $('#focal').val());
-    gl.uniform1f(gl.getUniformLocation(program, 'light_x'), $('#light_x').val());
-    gl.uniform1f(gl.getUniformLocation(program, 'light_y'), $('#light_y').val());
-    gl.uniform1f(gl.getUniformLocation(program, 'light_z'), $('#light_z').val());
-
-    // temporary 
-    require('./controls.js')(canvas, gl, program);
 
     var mercury_texture = gl.createTexture();
     gl.uniform1i(gl.getUniformLocation(program, "mercury_texture"), 0);

@@ -3,13 +3,12 @@ precision highp float;
 varying vec2 uv;
 uniform vec2 resolution;
 uniform vec3 mouse;
-uniform float phong_alpha;
-uniform float fineness;
+uniform vec3 light;
+uniform float epsilon;
 uniform float iterations;
+uniform float samples;
+uniform float phong_alpha;
 uniform float focal;
-uniform float light_x;
-uniform float light_y;
-uniform float light_z;
 uniform sampler2D mercury_texture;
 uniform sampler2D venus_texture;
 uniform sampler2D earth_texture;
@@ -17,11 +16,10 @@ uniform sampler2D mars_texture;
 uniform mat4 rotate_viewer;
 uniform mat4 rotate_scene;
 vec3 origin;
-vec3 light;
 vec3 eye;
 
 // Surface threshold i.e. minimum distance to surface
-float ray_EPSILON = 0.001 / fineness;
+float ray_EPSILON = 0.001 / epsilon;
 
 // Max allowable steps along ray
 float ray_MAX_STEPS = 10.0 * iterations;
@@ -52,7 +50,7 @@ vec3 ground (vec3 point) {
 
 vec3 mercury (vec3 point) {
 	float radius = 0.2;
-	vec3 center = origin - vec3(0,0,0);
+	vec3 center = origin + vec3(0,0,3);
 	float dist = sphere(point, center, radius);
 	float material = 0.0;
 	return vec3(dist, material, radius);
@@ -60,7 +58,7 @@ vec3 mercury (vec3 point) {
 
 vec3 venus (vec3 point) {
 	float radius = 0.2;
-	vec3 center = origin - vec3(0,0,1);
+	vec3 center = origin + vec3(0,0,2);
 	float dist = sphere(point, center, radius);
 	float material = 1.0;
 	return vec3(dist, material, radius);
@@ -69,7 +67,7 @@ vec3 venus (vec3 point) {
 
 vec3 earth (vec3 point) {
 	float radius = 0.2;
-	vec3 center = origin - vec3(0,0,2);
+	vec3 center = origin;
 	float dist = sphere(point, center, radius);
 	float material = 2.0;
 	return vec3(dist, material, radius);
@@ -77,9 +75,17 @@ vec3 earth (vec3 point) {
 
 vec3 mars (vec3 point) {
 	float radius = 0.2;
-	vec3 center = origin - vec3(0,0,3);
+	vec3 center = origin - vec3(0,0,1);
 	float dist = sphere(point, center, radius);
 	float material = 3.0;
+	return vec3(dist, material, radius);
+}
+
+vec3 pointlight (vec3 point) {
+	float radius = 0.2;
+	vec3 center = light + vec3(0,0.5,0);
+	float dist = sphere(point, center, radius);
+	float material = 4.0;
 	return vec3(dist, material, radius);
 }
 
@@ -90,11 +96,12 @@ vec3 join (vec3 thing, vec3 other) {
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return join(ground(point),
+  return join(pointlight(point),
+  		 join(ground(point),
   		 join(mercury(point),
   		 join(venus(point),
   		 join(earth(point),
-  		 	  mars(point)))));
+  		 	  mars(point))))));
 }
 
 vec3 normal (vec3 point) {
@@ -244,9 +251,6 @@ void main () {
 
 	// Define origin
 	origin = vec3(0, 0, 0);
-
-	// Define point light position
-	light = vec3(light_x, light_y, light_z);
 
 	// Define eye position
 	eye = (rotate_viewer * vec4(0, 0, 1 ,1)).xyz;

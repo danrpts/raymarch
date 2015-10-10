@@ -21,14 +21,21 @@
       <div class="mdl-layout__drawer">
         <span class="mdl-layout-title">Override</span>
         <ul style="list-style: none;" class="mdl-navigation">
-          <li>Fineness x1/1000: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="10" step="1" value="1" id="fineness" oninput="update(this.id, value)"></li>
+          
+          <li>Epsilon x1/1000: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="10" step="1" value="1" id="epsilon" oninput="update(this.id, value)"></li>
+
           <li>Iterations x10: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="10" step="1" value="6" id="iterations" oninput="update(this.id, value)"></li>
-          <li>Sample rate: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="10" step="1" value="1" id="fineness" oninput="update(this.id, value)"></li>
-          <li>Shininess: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="16" step="1" value="6" id="phong_alpha" oninput="update(this.id, value)"></li>
-          <li>Focal: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="5" step="1" value="1" id="focal" oninput="update(this.id, value)"></li>
-          <li>Light X: <input class="mdl-slider mdl-js-slider" type="range" min="-3" max="3" step="1" value="0" id="light_x" oninput="update(this.id, value)"></li>
-          <li>Light Y: <input class="mdl-slider mdl-js-slider" type="range" min="-3" max="3" step="1" value="1" id="light_y" oninput="update(this.id, value)"></li>
-          <li>Light Z: <input class="mdl-slider mdl-js-slider" type="range" min="-3" max="3" step="1" value="3" id="light_z" oninput="update(this.id, value)"></li>
+
+          <li>Sample rate: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="4" step="1" value="1" id="samples" oninput="update(this.id, value)"></li>
+
+          <li>Shininess: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="10" step="1" value="6" id="phong_alpha" oninput="update(this.id, value)"></li>
+
+          <li>Focal length: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="5" step="1" value="1" id="focal" oninput="update(this.id, value)"></li>
+
+          <li>Depth of field: <input class="mdl-slider mdl-js-slider" type="range" min="1" max="5" step="1" value="1" id="depth" oninput="update(this.id, value)"></li>
+
+          <li>Light: <input class="mdl-slider mdl-js-slider" type="range" min="0" max="360" step="1" value="0" id="light" oninput="lightHandler(value)"></li>
+          
         </ul>
       </div>
       <main class="mdl-layout__content">

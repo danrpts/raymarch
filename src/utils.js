@@ -64,13 +64,6 @@ module.exports.rad2deg = function (rad) {
   return rad*180/Math.PI;
 }
 
-// xy [] 2D coordinates
-// r float radius
-// TODO: need to fix texture mapping, i.e, when the object is rotated and we raymarch it
-/// the value of the hit point is the same because it originated from the same location
-//// and so the texture maps to the same location no matter what side of object we view
-//// [1] One solution is to rotate the camera instead of the object, clean
-//// [2] Somehow keep track of rotations and modify point, ugly
 module.exports.trackball = (function () {
 
   // Maintain closure on this point

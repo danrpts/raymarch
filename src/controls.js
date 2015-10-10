@@ -9,6 +9,18 @@ module.exports = function (canvas, gl, program) {
     utils.render(canvas, gl);
   }
 
+  window.light2coord = function (theta) {
+    theta = theta || $('#light').val();
+    theta = utils.deg2rad(theta);
+    var r = 6;
+    return [r*Math.cos(theta), r, r*Math.sin(theta)];
+  }
+
+  window.lightHandler = function (value) {
+    gl.uniform3fv(gl.getUniformLocation(program, 'light'), light2coord(value));
+    utils.render(canvas, gl);
+  }
+
   // mousemove
   //$('#canvas').mousemove(function (e) {
   //  if (e.ctrlKey) {
