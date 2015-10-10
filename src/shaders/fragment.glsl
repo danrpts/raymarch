@@ -10,6 +10,7 @@ uniform float focal;
 uniform float light_x;
 uniform float light_y;
 uniform float light_z;
+uniform sampler2D mercury_texture;
 uniform sampler2D venus_texture;
 uniform sampler2D earth_texture;
 uniform sampler2D mars_texture;
@@ -49,39 +50,36 @@ vec3 ground (vec3 point) {
 	return vec3(dist, material, 0.0);
 }
 
-vec3 venus (vec3 point) {
-
-	float radius = 0.45;
-	vec3 center = origin + vec3(0,0,2);
+vec3 mercury (vec3 point) {
+	float radius = 0.2;
+	vec3 center = origin - vec3(0,0,0);
 	float dist = sphere(point, center, radius);
 	float material = 0.0;
 	return vec3(dist, material, radius);
 }
 
+vec3 venus (vec3 point) {
+	float radius = 0.2;
+	vec3 center = origin - vec3(0,0,1);
+	float dist = sphere(point, center, radius);
+	float material = 1.0;
+	return vec3(dist, material, radius);
+}
+
 
 vec3 earth (vec3 point) {
-
-	// Radius of the Earth
-	float radius = 0.50;
-
-	// Location of the Earth
-	vec3 center = origin;
-
-	// Distance to Earth
+	float radius = 0.2;
+	vec3 center = origin - vec3(0,0,2);
 	float dist = sphere(point, center, radius);
-
-	// Matieral ID for Earth texture
-	float material = 1.0;
-
+	float material = 2.0;
 	return vec3(dist, material, radius);
 }
 
 vec3 mars (vec3 point) {
-
-	float radius = 0.45;
-	vec3 center = origin + vec3(0,0,-2);
+	float radius = 0.2;
+	vec3 center = origin - vec3(0,0,3);
 	float dist = sphere(point, center, radius);
-	float material = 2.0;
+	float material = 3.0;
 	return vec3(dist, material, radius);
 }
 
@@ -92,7 +90,11 @@ vec3 join (vec3 thing, vec3 other) {
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return join(ground(point), join(mars(point), join(earth(point), venus(point))));
+  return join(ground(point),
+  		 join(mercury(point),
+  		 join(venus(point),
+  		 join(earth(point),
+  		 	  mars(point)))));
 }
 
 vec3 normal (vec3 point) {
@@ -187,11 +189,13 @@ vec3 materialize (vec3 point, float material, float radius) {
   float phi = acos(d.y / radius); // phi E [0, PI]
   vec2 texel = vec2(theta / (2.0 * _PI_), phi / _PI_);
 
-  if      (material == 0.0) return alpha * phongify(point, normal, light, texture2D(venus_texture, texel).rgb);
+  if      (material == 0.0) return alpha * phongify(point, normal, light, texture2D(mercury_texture, texel).rgb);
+
+  else if (material == 1.0) return alpha * phongify(point, normal, light, texture2D(venus_texture, texel).rgb);
   
-  else if (material == 1.0) return alpha * phongify(point, normal, light, texture2D(earth_texture, texel).rgb);
+  else if (material == 2.0) return alpha * phongify(point, normal, light, texture2D(earth_texture, texel).rgb);
   
-  else if (material == 2.0) return alpha * phongify(point, normal, light, texture2D(mars_texture, texel).rgb);
+  else if (material == 3.0) return alpha * phongify(point, normal, light, texture2D(mars_texture, texel).rgb);
   
   else                      return alpha * phongify(point, normal, light, vec3(1));
 
