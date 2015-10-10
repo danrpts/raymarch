@@ -259,7 +259,7 @@ void main () {
   // Aspect ratio
   float aR = resolution.x / resolution.y;
 
-  // This is wrong!
+  // This is not a grid!
   vec3 shade = vec3(0);
   float rays = pow(2.0, samples); // max 32
   vec2 delta = vec2(2.0) / resolution / rays;
