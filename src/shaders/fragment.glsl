@@ -43,65 +43,65 @@ float plane (vec3 point, vec3 center, vec3 up) {
 }
 
 vec3 ground (vec3 point) {
-	float dist = plane(point, origin - vec3(0, 1, 0), vec3(0, 1, 0));
-	float material = 3.0;
-	return vec3(dist, material, 0.0);
+  float dist = plane(point, origin - vec3(0, 1, 0), vec3(0, 1, 0));
+  float material = 3.0;
+  return vec3(dist, material, 0.0);
 }
 
 vec3 mercury (vec3 point) {
-	float radius = 0.2;
-	vec3 center = origin + vec3(0,0,3);
-	float dist = sphere(point, center, radius);
-	float material = 0.0;
-	return vec3(dist, material, radius);
+  float radius = 0.2;
+  vec3 center = origin + vec3(0,0,3);
+  float dist = sphere(point, center, radius);
+  float material = 0.0;
+  return vec3(dist, material, radius);
 }
 
 vec3 venus (vec3 point) {
-	float radius = 0.2;
-	vec3 center = origin + vec3(0,0,2);
-	float dist = sphere(point, center, radius);
-	float material = 1.0;
-	return vec3(dist, material, radius);
+  float radius = 0.2;
+  vec3 center = origin + vec3(0,0,2);
+  float dist = sphere(point, center, radius);
+  float material = 1.0;
+  return vec3(dist, material, radius);
 }
 
 
 vec3 earth (vec3 point) {
-	float radius = 0.2;
-	vec3 center = origin;
-	float dist = sphere(point, center, radius);
-	float material = 2.0;
-	return vec3(dist, material, radius);
+  float radius = 0.2;
+  vec3 center = origin;
+  float dist = sphere(point, center, radius);
+  float material = 2.0;
+  return vec3(dist, material, radius);
 }
 
 vec3 mars (vec3 point) {
-	float radius = 0.2;
-	vec3 center = origin - vec3(0,0,1);
-	float dist = sphere(point, center, radius);
-	float material = 3.0;
-	return vec3(dist, material, radius);
+  float radius = 0.2;
+  vec3 center = origin - vec3(0,0,1);
+  float dist = sphere(point, center, radius);
+  float material = 3.0;
+  return vec3(dist, material, radius);
 }
 
 vec3 pointlight (vec3 point) {
-	float radius = 0.2;
-	vec3 center = light + vec3(0,0.5,0);
-	float dist = sphere(point, center, radius);
-	float material = 4.0;
-	return vec3(dist, material, radius);
+  float radius = 0.2;
+  vec3 center = light + vec3(0,0.5,0);
+  float dist = sphere(point, center, radius);
+  float material = 4.0;
+  return vec3(dist, material, radius);
 }
 
 // check which object is closer
 vec3 join (vec3 thing, vec3 other) {
-	return (thing.x < other.x) ? thing : other;
+  return (thing.x < other.x) ? thing : other;
 }
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
   return join(pointlight(point),
-  		 join(ground(point),
-  		 join(mercury(point),
-  		 join(venus(point),
-  		 join(earth(point),
-  		 	  mars(point))))));
+    join(ground(point),
+    join(mercury(point),
+    join(venus(point),
+    join(earth(point),
+      mars(point))))));
 }
 
 vec3 normal (vec3 point) {
@@ -152,37 +152,35 @@ vec3 phongify (vec3 point, vec3 normal, vec3 light, vec3 material) {
 }
 
 float shadow (vec3 p0) {
-	
-	// Important to start a small distance away from the originating surface
-	float distance = 0.1;
-	vec3 p1;
-	float alpha = 1.0;
-	vec3 v = normalize(light - p0);
-	float maxDistance = length(light - p0);
-	for (float i = 0.0; i < 101.0; ++i) {
-		
-		// Hack to allow variable iteration depth
-		if (distance >= maxDistance) break;
+  
+  // Important to start a small distance away from the originating surface
+  float distance = 0.1;
+  vec3 p1;
+  float alpha = 1.0;
+  vec3 v = normalize(light - p0);
+  float maxDistance = length(light - p0);
+  for (float i = 0.0; i < 101.0; ++i) {
+    
+    // Hack to allow variable iteration depth
+    if (distance >= maxDistance) break;
 
-		// Formulate p1 with point-vector addition
-		p1 = p0 + distance * v;
+    // Formulate p1 with point-vector addition
+    p1 = p0 + distance * v;
 
-		// Attempt to intersect a surface
-		vec3 intersection = scene(p1);
+    // Attempt to intersect a surface
+    vec3 intersection = scene(p1);
 
-		// Check intersection within threshold
-		float step = intersection.x;
-		if (step <= ray_EPSILON) {
-			alpha = 0.5;
-			break;
-		}
+    // Check intersection within threshold
+    float step = intersection.x;
+    if (step <= ray_EPSILON) {
+      alpha = 0.5;
+      break;
+    }
 
-		// Increment safe-marchable distance
-		distance += step;
-	}
-
-	return alpha;
-
+    // Increment safe-marchable distance
+    distance += step;
+  }
+  return alpha;
 }
 
 vec3 materialize (vec3 point, float material, float radius) {
@@ -211,57 +209,57 @@ vec3 materialize (vec3 point, float material, float radius) {
 // March along a ray defined by an origin and direction
 vec3 rayMarch (vec3 p0, vec3 v) {
 
-	// Sky color
-	vec3 shade = vec3(0);
+  // Sky color
+  vec3 shade = vec3(0);
 
-	// Marched distance
-	float distance = 0.0;
+  // Marched distance
+  float distance = 0.0;
 
-	// Begin marching
-	vec3 p1;
-	for (float i = 0.0; i < 101.0; ++i) {
-		
-		// Hack to allow variable iteration depth
-		if (i > ray_MAX_STEPS) break;
+  // Begin marching
+  vec3 p1;
+  for (float i = 0.0; i < 101.0; ++i) {
+    
+    // Hack to allow variable iteration depth
+    if (i > ray_MAX_STEPS) break;
 
-		// Formulate p1 with point-vector addition
-		p1 = p0 + distance * v;
+    // Formulate p1 with point-vector addition
+    p1 = p0 + distance * v;
 
-		// Attempt to intersect a surface
-		vec3 intersection = scene(p1);
+    // Attempt to intersect a surface
+    vec3 intersection = scene(p1);
 
-		// Check intersection within threshold
-		float step = intersection.x;
-		if (step <= ray_EPSILON) {
+    // Check intersection within threshold
+    float step = intersection.x;
+    if (step <= ray_EPSILON) {
 
-			// Set self defined shade of point
-			shade = materialize(p1, intersection.y, intersection.z);
-			break;
-		}
+      // Set self defined shade of point
+      shade = materialize(p1, intersection.y, intersection.z);
+      break;
+    }
 
-		// Increment safe-marchable distance
-		distance += step;
-	}
+    // Increment safe-marchable distance
+    distance += step;
+  }
 
-	// Done!
-	return shade;
+  // Done!
+  return shade;
 }
 
 void main () {
-
-	// Define origin
-	origin = vec3(0, 0, 0);
-
-	// Define eye position
-	eye = (rotate_viewer * vec4(0, 0, 1 ,1)).xyz;
-
-	// Aspect ratio
-	float aR = resolution.x / resolution.y;
-
-	// Ray direction normal
-    vec3 direction = (rotate_viewer * vec4(normalize(vec3(uv.x * aR, uv.y, -focal)),1)).xyz;
-
-	// Intersect the scene
-	gl_FragColor = vec4(rayMarch(eye, direction), 1);
 	
+  // Define origin
+  origin = vec3(0, 0, 0);
+
+  // Define eye position
+  eye = (rotate_viewer * vec4(0, 0, 1 ,1)).xyz;
+
+  // Aspect ratio
+  float aR = resolution.x / resolution.y;
+
+  // Ray direction normal
+  vec3 direction = (rotate_viewer * vec4(normalize(vec3(uv.x * aR, uv.y, -focal)),1)).xyz;
+
+  // Intersect the scene
+  gl_FragColor = vec4(rayMarch(eye, direction), 1);
+  
 }

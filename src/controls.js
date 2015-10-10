@@ -12,8 +12,8 @@ module.exports = function (canvas, gl, program) {
   window.light2coord = function (theta) {
     theta = theta || $('#light').val();
     theta = utils.deg2rad(theta);
-    var r = 6;
-    return [r*Math.cos(theta), r, r*Math.sin(theta)];
+    var r = 10;
+    return [r*Math.cos(theta), r/2, r*Math.sin(theta)];
   }
 
   window.lightHandler = function (value) {
