@@ -259,6 +259,7 @@ void main () {
   // Aspect ratio
   float aR = resolution.x / resolution.y;
 
+  // This is wrong!
   vec3 shade = vec3(0);
   float rays = pow(2.0, samples); // max 32
   vec2 delta = vec2(2.0) / resolution / rays;
@@ -269,7 +270,7 @@ void main () {
   	shade += rayMarch(eye, direction);
   }
 
-  // Intersect the scene
+  // Take average of summed shade
   gl_FragColor = vec4(shade / rays, 1);
   
 }
