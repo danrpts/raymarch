@@ -26,24 +26,14 @@ float ray_MAX_STEPS = 10.0 * iterations;
 
 // Hollow sphere distance estimator
 float sphere (vec3 point, vec3 center, float radius) {
-
  vec3 p = point - center;
 
   // Equation of a sphere
   return length(p) - radius;
 }
 
-float cube (vec3 point, vec3 center, float edgelength) {
-  
-  vec3 p = abs(point - center);
-
-  // Equation of a cube
-  return max(p.x, max(p.y, p.z)) - edgelength / 2.0;
-}
-
 // Plane distance estimator
 float plane (vec3 point, vec3 center, vec3 up) {
-  
   vec3 p = point - center;
 
   // Equation of a plane
@@ -72,12 +62,11 @@ vec3 venus (vec3 point) {
   return vec3(dist, material, radius);
 }
 
-
 vec3 earth (vec3 point) {
   float radius = 0.5;
   vec3 center = origin;
-  float dist = cube(point, center, radius);
-  float material = 4.0;
+  float dist = sphere(point, center, radius);
+  float material = 2.0;
   return vec3(dist, material, radius);
 }
 
@@ -254,23 +243,14 @@ void main () {
   origin = vec3(0, 0, 0);
 
   // Define eye position
-  eye = (rotate_viewer * vec4(0, 0, 1 ,1)).xyz;
+  eye = (rotate_viewer * vec4(0, 0, 1, 1)).xyz;
 
   // Aspect ratio
   float aR = resolution.x / resolution.y;
 
-  // This is not a grid!
-  vec3 shade = vec3(0);
-  float rays = pow(2.0, samples); // max 32
-  vec2 delta = vec2(2.0) / resolution / rays;
-  for (float i = 0.0; i < 17.0; ++i) {
-  	if (i >= rays) break;
-  	vec2 ss = uv + delta * i;
-  	vec3 direction = (rotate_viewer * vec4(normalize(vec3(ss.x * aR, ss.y, -focal)),1)).xyz;
-  	shade += rayMarch(eye, direction);
-  }
+  // Normalized direction vector
+  vec3 direction = (rotate_viewer * vec4(normalize(vec3(uv.x * aR, uv.y, -focal)), 1)).xyz;
 
   // Take average of summed shade
-  gl_FragColor = vec4(shade / rays, 1);
-  
+  gl_FragColor = vec4(rayMarch(eye, direction), 1);  
 }
