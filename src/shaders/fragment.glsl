@@ -33,6 +33,14 @@ float sphere (vec3 point, vec3 center, float radius) {
   return length(p) - radius;
 }
 
+float cube (vec3 point, vec3 center, float edgelength) {
+  
+  vec3 p = abs(point - center);
+
+  // Equation of a cube
+  return max(p.x, max(p.y, p.z)) - edgelength / 2.0;
+}
+
 // Plane distance estimator
 float plane (vec3 point, vec3 center, vec3 up) {
   
@@ -66,10 +74,10 @@ vec3 venus (vec3 point) {
 
 
 vec3 earth (vec3 point) {
-  float radius = 0.2;
+  float radius = 0.5;
   vec3 center = origin;
-  float dist = sphere(point, center, radius);
-  float material = 2.0;
+  float dist = cube(point, center, radius);
+  float material = 4.0;
   return vec3(dist, material, radius);
 }
 
@@ -96,12 +104,7 @@ vec3 join (vec3 thing, vec3 other) {
 
 // Define the entire scene here
 vec3 scene (vec3 point) {
-  return join(pointlight(point),
-    join(ground(point),
-    join(mercury(point),
-    join(venus(point),
-    join(earth(point),
-      mars(point))))));
+  return join(ground(point), earth(point));
 }
 
 vec3 normal (vec3 point) {
@@ -246,7 +249,7 @@ vec3 rayMarch (vec3 p0, vec3 v) {
 }
 
 void main () {
-	
+
   // Define origin
   origin = vec3(0, 0, 0);
 
@@ -256,10 +259,17 @@ void main () {
   // Aspect ratio
   float aR = resolution.x / resolution.y;
 
-  // Ray direction normal
-  vec3 direction = (rotate_viewer * vec4(normalize(vec3(uv.x * aR, uv.y, -focal)),1)).xyz;
+  vec3 shade = vec3(0);
+  float rays = pow(2.0, samples); // max 32
+  vec2 delta = vec2(2.0) / resolution / rays;
+  for (float i = 0.0; i < 17.0; ++i) {
+  	if (i >= rays) break;
+  	vec2 ss = uv + delta * i;
+  	vec3 direction = (rotate_viewer * vec4(normalize(vec3(ss.x * aR, ss.y, -focal)),1)).xyz;
+  	shade += rayMarch(eye, direction);
+  }
 
   // Intersect the scene
-  gl_FragColor = vec4(rayMarch(eye, direction), 1);
+  gl_FragColor = vec4(shade / rays, 1);
   
 }
