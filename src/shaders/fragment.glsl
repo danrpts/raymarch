@@ -251,6 +251,6 @@ void main () {
   // Normalized direction vector
   vec3 direction = (rotate_viewer * vec4(normalize(vec3(uv.x * aR, uv.y, -focal)), 1)).xyz;
 
-  // Take average of summed shade
+  // Color pixel
   gl_FragColor = vec4(rayMarch(eye, direction), 1);  
 }
