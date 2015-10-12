@@ -29,6 +29,7 @@
 - [x] Anti aliasing / super-sampling
 - [ ] Support different types of SSAA
 - [ ] Granularity
+- [ ] Depth of field
 
 # Shading Controls
 - [ ] Ui
