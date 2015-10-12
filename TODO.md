@@ -26,7 +26,8 @@
 - [ ] Fogging
 - [x] Shadows
 - [ ] Blend shadows into scene for softness
-- [ ] Anti aliasing / super-sampling
+- [x] Anti aliasing / super-sampling
+- [ ] Support different types of SSAA
 - [ ] Granularity
 
 # Shading Controls
