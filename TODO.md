@@ -16,6 +16,7 @@
 - [ ] Modules globals/state
 - [ ] Console controls
 - [ ] Debugger logs
+- [ ] Split shader code up 
 
 # Canvas
 - [ ] Aspect ratio
