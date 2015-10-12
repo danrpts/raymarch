@@ -1,4 +1,5 @@
 #define _PI_ 3.141592653589793238462643383279
+#define _MAX_SAMPLES_ 9.0
 precision highp float;
 varying vec2 uv;
 uniform vec2 resolution;
@@ -17,6 +18,7 @@ uniform mat4 rotate_viewer;
 uniform mat4 rotate_scene;
 vec3 origin;
 vec3 eye;
+float aspect;
 
 // Surface threshold i.e. minimum distance to surface
 float ray_EPSILON = 0.001 / epsilon;
@@ -202,7 +204,7 @@ vec3 materialize (vec3 point, float material, float radius) {
 vec3 rayMarch (vec3 p0, vec3 v) {
 
   // Sky color
-  vec3 shade = vec3(0);
+  vec3 shade = vec3(1);
 
   // Marched distance
   float distance = 0.0;
@@ -237,20 +239,41 @@ vec3 rayMarch (vec3 p0, vec3 v) {
   return shade;
 }
 
+// Grid style SSAA
+vec3 grid () {
+
+  // Define base color	
+  vec3 shade = vec3(0);
+
+  // Define unit of difference for sub pixel
+  vec2 delta = vec2(2) / (resolution * samples);
+
+  // Start dividing pixel in x and y directions
+  for (float i = 0.0; i < _MAX_SAMPLES_; ++i) {
+    if (i >= samples) break;
+    for (float j = 0.0; j < _MAX_SAMPLES_; ++j) {
+      if (j >= samples) break;
+      vec2 ss = uv + delta * vec2(i, j);
+      vec3 direction = normalize(vec3(ss.x * aR, ss.y, -focal));
+      shade += rayMarch(eye, direction);
+    }
+  }
+
+  // Average sub pixel colors
+  return shade / (samples * samples);
+}
+
 void main () {
 
   // Define origin
   origin = vec3(0, 0, 0);
 
-  // Define eye position
+  // Define and orient the eye
   eye = (rotate_viewer * vec4(0, 0, 1, 1)).xyz;
 
-  // Aspect ratio
-  float aR = resolution.x / resolution.y;
-
-  // Normalized direction vector
-  vec3 direction = (rotate_viewer * vec4(normalize(vec3(uv.x * aR, uv.y, -focal)), 1)).xyz;
+  // Define aspect ratio
+  aspect = resolution.x / resolution.y;
 
   // Color pixel
-  gl_FragColor = vec4(rayMarch(eye, direction), 1);  
+  gl_FragColor = vec4(grid(), 1);  
 }
