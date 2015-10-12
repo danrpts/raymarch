@@ -254,7 +254,7 @@ vec3 grid () {
     for (float j = 0.0; j < _MAX_SAMPLES_; ++j) {
       if (j >= samples) break;
       vec2 ss = uv + delta * vec2(i, j);
-      vec3 direction = normalize(vec3(ss.x * aspect, ss.y, -focal));
+      vec3 direction = (rotate_viewer * vec4(normalize(vec3(ss.x * aspect, ss.y, -focal)), 1)).xyz;
       shade += rayMarch(eye, direction);
     }
   }
