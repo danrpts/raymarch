@@ -28,6 +28,7 @@
 - [x] Shadows
 - [ ] Blend shadows into scene for softness
 - [x] Anti aliasing / super-sampling
+- [ ] Fix SSAA about center pixel
 - [ ] Support different types of SSAA
 - [ ] Granularity
 - [ ] Depth of field
